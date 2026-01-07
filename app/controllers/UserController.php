@@ -3,13 +3,16 @@ namespace Controllers;
 
 use Config\Database;
 use Repositories\UserRepository;
-use Services\AuthService;
+use Services\UserService;
 
 class UserController {
-    private UserRepository $userRepo;
+    private UserService $userService;
 
     public function __construct() {
-        $this->userRepo = new UserRepository(Database::getConnection());
+        // Dependency Injection Setup
+        $db = Database::getConnection();
+        $repo = new UserRepository($db);
+        $this->userService = new UserService($repo);
     }
 
     public function index() {
@@ -39,23 +42,18 @@ class UserController {
     public function store() {
         $input = json_decode(file_get_contents('php://input'), true);
 
-        // Basic Validation
-        if (!isset($input['email']) || !isset($input['password'])) {
+        if (!isset($input['email'], $input['password'])) {
             http_response_code(400);
             echo json_encode(['error' => 'Missing required fields']);
             exit;
         }
 
         try {
-            $newId = $this->userRepo->create($input);
-            http_response_code(201); // Created
-            echo json_encode([
-                'message' => 'User created',
-                'id' => $newId,
-                'user' => $input // In production, exclude sensitive fields like password
-            ]);
+            $newId = $this->userService->registerUser($input);
+            http_response_code(201);
+            echo json_encode(['message' => 'User created', 'id' => $newId]);
         } catch (\Exception $e) {
-            http_response_code(500);
+            http_response_code(400); // 400 Bad Request usually better for "Email exists"
             echo json_encode(['error' => $e->getMessage()]);
         }
     }

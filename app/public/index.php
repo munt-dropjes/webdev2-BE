@@ -34,41 +34,23 @@ $router->mount('/api', function() use ($router, $auth) {
 
     // Users Resource
     $router->mount('/users', function() use ($router, $auth) {
-
         $router->get('/', 'Controllers\UserController@index');
         $router->post('/', 'Controllers\UserController@store');
-
-        // New Routes using {id} parameter
-        $router->put('/(\d+)', 'Controllers\UserController@update');   // matches /api/users/1
-        $router->delete('/(\d+)', 'Controllers\UserController@destroy'); // matches /api/users/1
+        $router->put('/(\d+)', 'Controllers\UserController@update');
+        $router->delete('/(\d+)', 'Controllers\UserController@destroy');
     });
 
     $router->mount('/families', function() use ($router, $auth) {
-        // Publicly readable? Or protected?
-        // Assuming protected based on requirements:
-        $router->get('/', function() use ($auth) {
-            $auth->validateToken();
-            (new \Controllers\FamilyController())->index();
-        });
+        $router->get('/', 'Controllers\FamilyController@index');
     });
 
     $router->mount('/transactions', function() use ($router, $auth) {
-        $router->post('/', function() use ($auth) {
-            $auth->validateToken();
-            // Optional: Check if user is admin before allowing cash updates
-            // $auth->requireRole('admin');
-            (new \Controllers\FamilyController())->transaction();
-        });
+        $router->post('/', 'Controllers\FamilyController@transaction');
     });
 
-    // Optional history endpoint
-    $router->get('/history', function() use ($auth) {
-        $auth->validateToken();
-        (new \Controllers\FamilyController())->history();
-    });
+    $router->get('/history', 'Controllers\FamilyController@history');
 });
 
-// 404 Handler
 $router->set404(function() {
     header('HTTP/1.1 404 Not Found');
     header('Content-Type: application/json');
