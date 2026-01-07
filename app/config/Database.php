@@ -11,8 +11,8 @@ class Database {
         if (self::$instance === null) {
             // Read from Environment Variables
             $host = $_ENV['DB_HOST'] ?? '127.0.0.1';
-            $db   = $_ENV['DB_NAME'] ?? 'test';
-            $user = $_ENV['DB_USER'] ?? 'root';
+            $db   = $_ENV['DB_NAME'] ?? 'developmentdb';
+            $user = $_ENV['DB_USER'] ?? 'developer';
             $pass = $_ENV['DB_PASS'] ?? '';
             $charset = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
 

@@ -5,7 +5,6 @@ use Bramus\Router\Router;
 use Services\AuthService;
 use Dotenv\Dotenv;
 
-// 1. Load Environment Variables
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->safeLoad();
 
@@ -24,7 +23,7 @@ $auth = new AuthService();
 // --- Public Routes ---
 $router->post('/login', 'Controllers\AuthController@login');
 
-// --- Protected Routes (Middleware) ---
+// --- Protected Routes ---
 $router->before('GET|POST|PUT|DELETE', '/api/.*', function() use ($auth) {
     // Validates token for all /api/ routes
     $auth->validateToken();
@@ -46,6 +45,11 @@ $router->mount('/api', function() use ($router, $auth) {
         $router->post('/', 'Controllers\UserController@store');
 
         // Add PUT and DELETE mappings here...
+    });
+
+    $router->mount('/families', function() use ($router) {
+        $router->get('/', 'Controllers\FamilyController@index');
+        $router->post('/transaction', 'Controllers\FamilyController@transaction');
     });
 });
 
