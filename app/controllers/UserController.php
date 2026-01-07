@@ -59,4 +59,51 @@ class UserController {
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
+
+    // PUT /api/users/{id}
+    public function update($id) {
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        // 1. Check if user exists
+        $user = $this->userRepo->findById($id);
+        if (!$user) {
+            http_response_code(404);
+            echo json_encode(['error' => 'User not found']);
+            exit;
+        }
+
+        // 2. Perform Update
+        try {
+            $this->userRepo->update($id, $input);
+
+            // 3. Return updated object
+            $updatedUser = $this->userRepo->findById($id);
+            echo json_encode([
+                'message' => 'User updated',
+                'data' => $updatedUser
+            ]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Update failed: ' . $e->getMessage()]);
+        }
+    }
+
+    // DELETE /api/users/{id}
+    public function destroy($id) {
+        $user = $this->userRepo->findById($id);
+        if (!$user) {
+            http_response_code(404);
+            echo json_encode(['error' => 'User not found']);
+            exit;
+        }
+
+        try {
+            $this->userRepo->delete($id);
+            http_response_code(200);
+            echo json_encode(['message' => 'User deleted successfully']);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Deletion failed']);
+        }
+    }
 }

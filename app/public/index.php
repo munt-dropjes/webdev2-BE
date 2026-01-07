@@ -35,21 +35,36 @@ $router->mount('/api', function() use ($router, $auth) {
     // Users Resource
     $router->mount('/users', function() use ($router, $auth) {
 
-        // GET /api/users (Admin only example)
-        $router->get('/', function() use ($auth) {
-            $auth->requireRole('admin');
-            (new \Controllers\UserController())->index();
-        });
-
-        // POST /api/users
+        $router->get('/', 'Controllers\UserController@index');
         $router->post('/', 'Controllers\UserController@store');
 
-        // Add PUT and DELETE mappings here...
+        // New Routes using {id} parameter
+        $router->put('/(\d+)', 'Controllers\UserController@update');   // matches /api/users/1
+        $router->delete('/(\d+)', 'Controllers\UserController@destroy'); // matches /api/users/1
     });
 
-    $router->mount('/families', function() use ($router) {
-        $router->get('/', 'Controllers\FamilyController@index');
-        $router->post('/transaction', 'Controllers\FamilyController@transaction');
+    $router->mount('/families', function() use ($router, $auth) {
+        // Publicly readable? Or protected?
+        // Assuming protected based on requirements:
+        $router->get('/', function() use ($auth) {
+            $auth->validateToken();
+            (new \Controllers\FamilyController())->index();
+        });
+    });
+
+    $router->mount('/transactions', function() use ($router, $auth) {
+        $router->post('/', function() use ($auth) {
+            $auth->validateToken();
+            // Optional: Check if user is admin before allowing cash updates
+            // $auth->requireRole('admin');
+            (new \Controllers\FamilyController())->transaction();
+        });
+    });
+
+    // Optional history endpoint
+    $router->get('/history', function() use ($auth) {
+        $auth->validateToken();
+        (new \Controllers\FamilyController())->history();
     });
 });
 
