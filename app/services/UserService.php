@@ -11,15 +11,19 @@ class UserService {
         $this->userRepo = $userRepo;
     }
 
-    public function getAllUsers(array $filters, int $page, int $limit): array {
-        $offset = ($page - 1) * $limit;
+    /**
+     * @throws Exception
+     */
+    public function getAllUsers(array $filters, int $offset, int $limit): array {
         return $this->userRepo->findAll($filters, $limit, $offset);
     }
 
+    /**
+     * @throws Exception
+     */
     public function registerUser(array $data): int {
-        // Business Logic: Check if email exists
-        if ($this->userRepo->findByEmail($data['email'])) {
-            throw new Exception("Email already in use");
+        if ($this->userRepo->findByUsername($data['username'])) {
+            throw new Exception("Username already exists", 400);
         }
 
         // Business Logic: Hash Password
@@ -30,10 +34,13 @@ class UserService {
         return $this->userRepo->create($data);
     }
 
+    /**
+     * @throws Exception
+     */
     public function modifyUser(int $id, array $data): array {
         $user = $this->userRepo->findById($id);
         if (!$user) {
-            throw new Exception("User not found");
+            throw new Exception("User not found", 400);
         }
 
         // Business Logic: If updating password, hash it first
@@ -45,9 +52,12 @@ class UserService {
         return $this->userRepo->findById($id);
     }
 
+    /**
+     * @throws Exception
+     */
     public function deleteUser(int $id): void {
         if (!$this->userRepo->delete($id)) {
-            throw new Exception("Could not delete user");
+            throw new Exception("User not found or could not be deleted", 400);
         }
     }
 }

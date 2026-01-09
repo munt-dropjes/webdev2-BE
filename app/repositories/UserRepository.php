@@ -1,95 +1,121 @@
 <?php
 namespace Repositories;
 
+use models\User;
 use PDO;
+use Exception;
 
-class UserRepository {
-    private PDO $db;
-
-    public function __construct(PDO $db) {
-        $this->db = $db;
-    }
-
+class UserRepository extends Repository {
+    /**
+     * @throws Exception
+     */
     public function findAll(array $filters, int $limit, int $offset): array {
-        $sql = "SELECT id, name, email, role FROM users WHERE 1=1";
-        $params = [];
+        try {
+            $sql = "SELECT id, username, email, role, created_at FROM users WHERE 1=1";
+            $params = [];
 
-        // Filtering
-        if (isset($filters['role'])) {
-            $sql .= " AND role = :role";
-            $params[':role'] = $filters['role'];
+            // Filtering
+            if (isset($filters['role'])) {
+                $sql .= " AND role = :role";
+                $params[':role'] = $filters['role'];
+            }
+
+            // Pagination
+            $sql .= " LIMIT :limit OFFSET :offset";
+
+            $stmt = $this->connection->prepare($sql);
+
+            // Bind params manually for Limit/Offset as they must be integers
+            foreach ($params as $key => $val) {
+                $stmt->bindValue($key, $val);
+            }
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $stmt->setFetchMode(PDO::FETCH_CLASS, User::class);
+            return $stmt->fetchAll();
+        } catch (Exception $e) {
+            throw new Exception("Database Exception: " . $e->getMessage(), 500);
         }
+    }
 
-        // Pagination
-        $sql .= " LIMIT :limit OFFSET :offset";
+    /**
+     * @throws Exception
+     */
+    public function findByUsername(string $username) {
+        try {
+            $stmt = $this->connection->prepare("SELECT id, username, email, password, role, created_at FROM users WHERE name = :username");
+            $stmt->bindParam(":username", $username, PDO::PARAM_STR);
+            $stmt->execute();
 
-        $stmt = $this->db->prepare($sql);
-
-        // Bind params manually for Limit/Offset as they must be integers
-        foreach ($params as $key => $val) {
-            $stmt->bindValue($key, $val);
+            $stmt->setFetchMode(PDO::FETCH_CLASS, User::class);
+            return $stmt->fetch();
+        } catch (Exception $e) {
+            throw new Exception("Database Exception: " . $e->getMessage(), 500);
         }
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-
-        $stmt->execute();
-        return $stmt->fetchAll();
     }
 
-    public function create(array $data): int {
-        $sql = "INSERT INTO users (name, email, password, role) VALUES (:name, :email, :password, :role)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':name' => $data['name'],
-            ':email' => $data['email'],
-            ':password' => $data['password'],
-            ':role' => $data['role'] ?? 'user'
-        ]);
-        return (int)$this->db->lastInsertId();
-    }
-
-    public function findByEmail(string $email) {
-        $stmt = $this->db->prepare("SELECT id, name, email, password, role FROM users WHERE email = :email");
-        $stmt->execute([':email' => $email]);
-        return $stmt->fetch(); // Returns false if not found
-    }
-
+    /**
+     * @throws Exception
+     */
     public function findById(int $id) {
-        $stmt = $this->db->prepare("SELECT id, name, email, role FROM users WHERE id = :id");
-        $stmt->execute([':id' => $id]);
-        return $stmt->fetch();
+        try {
+            $stmt = $this->connection->prepare("SELECT id, username, email, role, created_at FROM users WHERE id = :id");
+            $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $stmt->setFetchMode(PDO::FETCH_CLASS, User::class);
+            return $stmt->fetch();
+        } catch (Exception $e) {
+            throw new Exception("Database Exception: " . $e->getMessage(), 500);
+        }
     }
 
-    public function update(int $id, array $data): bool {
-        // Dynamic query construction allows updating specific fields
-        $fields = [];
-        $params = [':id' => $id];
-
-        if (isset($data['name'])) {
-            $fields[] = "name = :name";
-            $params[':name'] = $data['name'];
+    /**
+     * @throws Exception
+     */
+    public function create(User $user): bool {
+        try {
+            $sql = "INSERT INTO users (username, email, password, role) VALUES (:username, :email, :password, :role)";
+            $stmt = $this->connection->prepare($sql);
+            $stmt->bindParam(":username", $user->username, PDO::PARAM_STR);
+            $stmt->bindParam(":email", $user->email, PDO::PARAM_STR);
+            $stmt->bindParam(":password", $user->password, PDO::PARAM_STR);
+            $stmt->bindParam(":role", $user->role, PDO::PARAM_STR);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            throw new Exception("Database Exception: " . $e->getMessage(), 500);
         }
-        if (isset($data['email'])) {
-            $fields[] = "email = :email";
-            $params[':email'] = $data['email'];
-        }
-        if (isset($data['role'])) {
-            $fields[] = "role = :role";
-            $params[':role'] = $data['role'];
-        }
-        // Note: Password update logic usually requires separate handling for hashing
-
-        if (empty($fields)) {
-            return false; // Nothing to update
-        }
-
-        $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
     }
 
-    public function delete(int $id): bool {
-        $stmt = $this->db->prepare("DELETE FROM users WHERE id = :id");
-        return $stmt->execute([':id' => $id]);
+    /**
+     * @throws Exception
+     */
+    public function update(User $user): bool {
+        try {
+            $stmt = $this->connection->prepare("UPDATE users SET username = :username, email = :email, password = :password, role = :role WHERE id = :id");
+            $stmt->bindParam(":username", $user->username, PDO::PARAM_STR);
+            $stmt->bindParam(":email", $user->email, PDO::PARAM_STR);
+            $stmt->bindParam(":password", $user->password, PDO::PARAM_STR);
+            $stmt->bindParam(":role", $user->role, PDO::PARAM_STR);
+            $stmt->bindParam(":id", $user->id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            throw new Exception("Database Exception: " . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function delete(int $id) : bool {
+        try {
+            $stmt = $this->connection->prepare("DELETE FROM users WHERE id = :id");
+            $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            throw new Exception("Database Exception: " . $e->getMessage(), 500);
+        }
     }
 }

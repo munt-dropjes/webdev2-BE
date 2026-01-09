@@ -5,8 +5,17 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Config\JwtConfig;
 use Exception;
+use Models\DTO\UserLoginRequest;
+use models\User;
+use Repositories\UserRepository;
 
 class AuthService {
+    private UserRepository $userRepository;
+
+    function __construct() {
+        $this->userRepository = new UserRepository();
+    }
+
     /**
      * Validates the Bearer token and returns the decoded payload.
      */
@@ -15,7 +24,7 @@ class AuthService {
         $authHeader = $headers['Authorization'] ?? '';
 
         if (!preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
-            $this->abort(401, 'Token not found');
+            $this->abort(400, 'Token not found');
         }
 
         $jwt = $matches[1];
@@ -25,16 +34,27 @@ class AuthService {
         } catch (Exception $e) {
             $this->abort(401, 'Invalid Token: ' . $e->getMessage());
         }
-        return (object)[]; // Unreachable but keeps IDE happy
+        return (object)[];
     }
 
     /**
-     * Middleware to check if user has specific role
+     * @throws Exception
      */
-    public function requireRole(string $requiredRole): void {
-        $decoded = $this->validateToken();
-        if (($decoded->role ?? '') !== $requiredRole) {
-            $this->abort(403, 'Forbidden: Insufficient permissions');
+    public function login (UserLoginRequest $userRequest): User {
+        if (!isset($userRequest->username) || !isset($userRequest->password)) {
+            throw new Exception("Missing required fields", 400);
+        }
+
+        try {
+            $user = $this->userRepository->findByUsername($userRequest->username);
+
+            if (!$user || !password_verify($userRequest->password, $user->password)) {
+                throw new Exception("Invalid username or password", 401);
+            }
+
+            return $user;
+        } catch (Exception $e) {
+            throw new Exception('Internal server error: ' . $e->getMessage(), 500);
         }
     }
 

@@ -1,50 +1,61 @@
 <?php
 namespace Controllers;
 
-use Config\Database;
 use Config\JwtConfig;
-use Repositories\UserRepository;
+use Models\DTO\UserLoginRequest;
 use Firebase\JWT\JWT;
+use Exception;
+use Services\AuthService;
 
-class AuthController {
+class AuthController extends Controller
+{
+    private AuthService $authService;
+
+    public function __construct() {
+        $this->authService = new AuthService();
+    }
+
     public function login() {
-        $input = json_decode(file_get_contents('php://input'), true);
-        $repo = new UserRepository(Database::getConnection());
+        try {
+            $user = $this->requestObjectFromPostedJson(UserLoginRequest::class);
 
-        if (!isset($input['email']) || !isset($input['password'])) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Email and password are required']);
+            $user = $this->authService->login($user);
+        } catch (Exception $e) {
+            $this->respondWithError($e->getCode(), $e->getMessage());
             return;
         }
 
-        $user = $repo->findByEmail($input['email']);
+        $jwt = $this->generateToken($user);
 
-        if (!$user || !password_verify($input['password'], $user['password'])) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Invalid password or email']);
-            return;
-        }
+        $this->respond(
+            array(
+                "message" => "Login successful",
+                "token" => $jwt,
+                "user" => $user,
+                "expireAt" => date('d-m-Y H:i:s', (time() + JWTConfig::getExpireTime()))
+            )
+        );
+    }
 
+    private function generateToken($user): string
+    {
         $payload = [
-            'iss' => 'family-game-api',
-            'iat' => time(),
-            'exp' => time() + (3600 * 4),
-            'sub' => $user['id'],
-            'role' => $user['role']
+            "iss" => JWTConfig::getIssuer(),
+            "iat" => time(),
+            "exp" => time() + JWTConfig::getExpireTime(),
+            "data" => [
+                "id" => $user->id,
+                "username" => $user->username,
+                "role" => $user->role
+            ]
         ];
 
         try {
-            $jwt = JWT::encode($payload, JwtConfig::getSecret(), JwtConfig::getAlgo());
+            return JWT::encode($payload, JwtConfig::getSecret(), JwtConfig::getAlgo());
         } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Token generation failed']);
             return;
         }
-
-        header('Content-Type: application/json');
-        echo json_encode([
-            'token' => $jwt,
-            'role'  => $user['role']
-        ]);
     }
 }
