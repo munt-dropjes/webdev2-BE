@@ -25,24 +25,32 @@ class AuthController extends Controller
             return;
         }
 
-        $jwt = $this->generateToken($user);
+        try{
+            $jwt = $this->generateToken($user);
+        } catch (Exception $e) {
+            $this->respondWithError(500, 'Token generation failed: ' . $e->getMessage());
+            return;
+        }
 
         $this->respond(
             array(
                 "message" => "Login successful",
                 "token" => $jwt,
                 "user" => $user,
-                "expireAt" => date('d-m-Y H:i:s', (time() + JWTConfig::getExpireTime()))
+                "expireAt" => date('d-m-Y H:i:s', (time() + JwtConfig::getExpireTime()))
             )
         );
     }
 
+    /**
+     * @throws Exception
+     */
     private function generateToken($user): string
     {
         $payload = [
-            "iss" => JWTConfig::getIssuer(),
+            "iss" => JwtConfig::getIssuer(),
             "iat" => time(),
-            "exp" => time() + JWTConfig::getExpireTime(),
+            "exp" => time() + JwtConfig::getExpireTime(),
             "data" => [
                 "id" => $user->id,
                 "username" => $user->username,
@@ -53,9 +61,7 @@ class AuthController extends Controller
         try {
             return JWT::encode($payload, JwtConfig::getSecret(), JwtConfig::getAlgo());
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Token generation failed']);
-            return;
+            throw new Exception($e->getMessage());
         }
     }
 }

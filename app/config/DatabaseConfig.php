@@ -5,11 +5,11 @@ namespace Config;
 class DatabaseConfig
 {
     public static function getType(): string {
-        return $_ENV['DB_TYPE'] ?? 'default_secret_for_dev';
+        return $_ENV['DB_TYPE'] ?? 'mysql';
     }
 
     public static function getServerName(): string {
-        return $_ENV['DB_SERVER'] ?? 'http://localhost/api';
+        return $_ENV['DB_SERVER'] ?? 'localhost';
     }
 
     public static function getUsername(): string {
@@ -22,5 +22,9 @@ class DatabaseConfig
 
     public static function getDatabase(): string {
         return $_ENV['DB_SERVER'] ?? 'developmentdb';
+    }
+
+    public static function getPort(): string {
+        return $_ENV['DB_PORT'] ?? '8080';
     }
 }

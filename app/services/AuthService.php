@@ -5,8 +5,9 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Config\JwtConfig;
 use Exception;
+use http\Exception\BadMessageException;
 use Models\DTO\UserLoginRequest;
-use models\User;
+use Models\User;
 use Repositories\UserRepository;
 
 class AuthService {
@@ -48,8 +49,12 @@ class AuthService {
         try {
             $user = $this->userRepository->findByUsername($userRequest->username);
 
-            if (!$user || !password_verify($userRequest->password, $user->password)) {
-                throw new Exception("Invalid username or password", 401);
+            if (!$user) {
+                throw new Exception("Invalid username", 401);
+            }
+
+            if (!password_verify($userRequest->password, $user->password)) {
+                throw new Exception("Invalid password", 401);
             }
 
             return $user;

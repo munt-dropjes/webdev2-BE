@@ -1,7 +1,7 @@
 <?php
 namespace Repositories;
 
-use models\User;
+use Models\User;
 use PDO;
 use Exception;
 
@@ -45,7 +45,7 @@ class UserRepository extends Repository {
      */
     public function findByUsername(string $username) {
         try {
-            $stmt = $this->connection->prepare("SELECT id, username, email, password, role, created_at FROM users WHERE name = :username");
+            $stmt = $this->connection->prepare("SELECT id, username, email, password, role, created_at FROM users WHERE username = :username");
             $stmt->bindParam(":username", $username, PDO::PARAM_STR);
             $stmt->execute();
 

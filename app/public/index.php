@@ -22,6 +22,8 @@ $auth = new AuthService();
 
 // --- Public Routes ---
 $router->post('/login', 'Controllers\AuthController@login');
+$router->get('/ping', 'Controllers\Controller@register');
+$router->get('/diagnostics', 'Controllers\Controller@diagnostics');
 
 // --- Protected Routes ---
 $router->before('GET|POST|PUT|DELETE', '/api/.*', function() use ($auth) {

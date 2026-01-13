@@ -4,12 +4,26 @@ namespace Controllers;
 
 class Controller
 {
-    function respond($data)  : void
+    public function ping()
+    {
+        $this->respond("");
+    }
+
+    public function diagnostics(){
+        $data = [
+            'status' => 'OK',
+            'timestamp' => date("Y-m-d H:i:s"),
+            'server' => $_ENV['JWT_ISSUER']
+        ];
+        $this->respond($data);
+    }
+
+    protected function respond($data)  : void
     {
         $this->respondWithCode(200, $data);
     }
 
-    function respondWithError($httpCode, $message) : void
+    protected function respondWithError($httpCode, $message) : void
     {
         $data = array('errorMessage' => $message);
         $this->respondWithCode($httpCode, $data);
