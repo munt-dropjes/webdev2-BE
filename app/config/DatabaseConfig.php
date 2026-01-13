@@ -9,7 +9,7 @@ class DatabaseConfig
     }
 
     public static function getServerName(): string {
-        return $_ENV['DB_SERVER'] ?? 'localhost';
+        return $_ENV['DB_SERVER'] ?? 'mysql';
     }
 
     public static function getUsername(): string {
@@ -17,11 +17,11 @@ class DatabaseConfig
     }
 
     public static function getPassword(): string {
-        return $_ENV['DB_PASS'] ?? '';
+        return $_ENV['DB_PASS'] ?? 'secret123';
     }
 
     public static function getDatabase(): string {
-        return $_ENV['DB_SERVER'] ?? 'developmentdb';
+        return $_ENV['DB_NAME'] ?? 'developmentdb';
     }
 
     public static function getPort(): string {
