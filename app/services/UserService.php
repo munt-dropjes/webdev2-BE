@@ -42,11 +42,7 @@ class UserService {
                 throw new Exception("User creation failed", 500);
             }
 
-            $user = $this->userRepo->findByUsername($request->username);
-            if (!$user) {
-                throw new Exception("User creation failed", 500);
-            }
-            return $user;
+            return $this->userRepo->findByUsername($request->username);
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage(), $ex->getCode());
         }
