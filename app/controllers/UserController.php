@@ -3,6 +3,8 @@ namespace Controllers;
 
 use Models\DTO\UserCreateRequest;
 use Models\DTO\UserManyRequest;
+use Models\DTO\UserUpdateRequest;
+use models\User;
 use Services\UserService;
 use Exception;
 
@@ -34,7 +36,7 @@ class UserController extends Controller
         }
     }
 
-    public function getById() {
+    public function getById(int $id) {
         try {
             $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
             $user = $this->userService->getById($id);
@@ -49,8 +51,8 @@ class UserController extends Controller
     }
 
     public function newUser() {
-        if (!isset($input['email'], $input['password'])) {
-            $this->respondWithError(400, "Missing email or password");
+        if (!isset($input['email'], $input['password'], $input['username'])) {
+            $this->respondWithError(400, "Missing fields: email, username, password are required");
         }
 
         $newUserRequest = $this->requestObjectFromPostedJson(UserCreateRequest::class);
@@ -63,50 +65,30 @@ class UserController extends Controller
         }
     }
 
-    // PUT /api/users/{id}
-    public function update($id) {
-        $input = json_decode(file_get_contents('php://input'), true);
-
-        // 1. Check if user exists
-        $user = $this->userService->findById($id);
-        if (!$user) {
-            http_response_code(404);
-            echo json_encode(['error' => 'User not found']);
-            exit;
-        }
-
-        // 2. Perform Update
+    public function updateUser(int $id) {
         try {
-            $this->userService->update($id, $input);
+            $inputUser = $this->requestObjectFromPostedJson(UserUpdateRequest::class);
 
-            // 3. Return updated object
-            $updatedUser = $this->userService->findById($id);
-            echo json_encode([
-                'message' => 'User updated',
-                'data' => $updatedUser
-            ]);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Update failed: ' . $e->getMessage()]);
+            $this->respond($this->userService->updateUser($id, $inputUser));
+        } catch (Exception $e) {
+            $this->respondWithError($e->getCode(), $e->getMessage());
         }
     }
 
-    // DELETE /api/users/{id}
-    public function destroy($id) {
-        $user = $this->userService->findById($id);
+    /**
+     * @throws Exception
+     */
+    public function deleteUser($id) {
+        $user = $this->userService->getById($id);
         if (!$user) {
-            http_response_code(404);
-            echo json_encode(['error' => 'User not found']);
-            exit;
+            $this->respondWithError(404, "User not found");
         }
 
         try {
-            $this->userService->delete($id);
-            http_response_code(200);
-            echo json_encode(['message' => 'User deleted successfully']);
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Deletion failed']);
+            $this->userService->deleteUser($id);
+            $this->respond(['message' => 'User deleted successfully']);
+        } catch (Exception $e) {
+            $this->respondWithError($e->getCode(), $e->getMessage());
         }
     }
 }

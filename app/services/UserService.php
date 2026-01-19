@@ -3,6 +3,7 @@ namespace Services;
 
 use Models\DTO\UserCreateRequest;
 use Models\DTO\UserManyRequest;
+use Models\DTO\UserUpdateRequest;
 use models\User;
 use Repositories\UserRepository;
 use Exception;
@@ -58,27 +59,40 @@ class UserService {
     /**
      * @throws Exception
      */
-    public function modifyUser(int $id, array $data): array {
-        $user = $this->userRepo->findById($id);
-        if (!$user) {
-            throw new Exception("User not found", 400);
-        }
+    public function updateUser(int $id, UserUpdateRequest $request): User {
+        try {
+            $user = $this->getById($id);
+            if (!$user) {
+                throw new Exception("User not found", 404);
+            }
 
-        // Business Logic: If updating password, hash it first
-        if (!empty($data['password'])) {
-            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-        }
+            // Business Logic: If updating password, hash it first
+            if (!empty($request->password)) {
+                $request->password = password_hash($request->password, PASSWORD_DEFAULT);
+            }
 
-        $this->userRepo->update($id, $data);
-        return $this->userRepo->findById($id);
+            $updatingUser = new UserUpdateRequest();
+            $updatingUser->id = $id;
+            $updatingUser->username = $request->username ?? $user->username;
+            $updatingUser->email = $request->email ?? $user->email;
+            $updatingUser->password = $request->password ?? $user->password;
+            $updatingUser->role = $request->role ?? $user->role;
+
+            $this->userRepo->update($updatingUser);
+            return $this->userRepo->findById($id);
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage(), $ex->getCode());
+        }
     }
 
     /**
      * @throws Exception
      */
     public function deleteUser(int $id): void {
-        if (!$this->userRepo->delete($id)) {
-            throw new Exception("User not found or could not be deleted", 400);
+        try{
+            $this->userRepo->delete($id);
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage(), $ex->getCode());
         }
     }
 }

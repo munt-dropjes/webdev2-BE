@@ -39,8 +39,8 @@ $router->mount('/api', function() use ($router, $auth) {
         $router->get('/', 'Controllers\UserController@getAll');
         $router->get('/{id}', 'Controllers\UserController@getById');
         $router->post('/', 'Controllers\UserController@newUser');
-        $router->put('/{id}', 'Controllers\UserController@update');
-        $router->delete('/{id}', 'Controllers\UserController@destroy');
+        $router->put('/{id}', 'Controllers\UserController@updateUser');
+        $router->delete('/{id}', 'Controllers\UserController@deleteUser');
     });
 
     $router->mount('/families', function() use ($router, $auth) {

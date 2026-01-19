@@ -3,6 +3,7 @@ namespace Repositories;
 
 use Models\DTO\UserCreateRequest;
 use Models\DTO\UserManyRequest;
+use Models\DTO\UserUpdateRequest;
 use Models\User;
 use PDO;
 use Exception;
@@ -94,7 +95,7 @@ class UserRepository extends Repository {
     /**
      * @throws Exception
      */
-    public function update(User $user): bool {
+    public function update(UserUpdateRequest $user): bool {
         try {
             $stmt = $this->connection->prepare("UPDATE users SET username = :username, email = :email, password = :password, role = :role WHERE id = :id");
             $stmt->bindParam(":username", $user->username, PDO::PARAM_STR);
