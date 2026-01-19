@@ -1,7 +1,9 @@
 <?php
 namespace Services;
 
+use Models\DTO\UserCreateRequest;
 use Models\DTO\UserManyRequest;
+use models\User;
 use Repositories\UserRepository;
 use Exception;
 
@@ -22,17 +24,32 @@ class UserService {
     /**
      * @throws Exception
      */
-    public function registerUser(array $data): int {
-        if ($this->userRepo->findByUsername($data['username'])) {
-            throw new Exception("Username already exists", 400);
-        }
+    public function registerUser(UserCreateRequest $request): User {
+        try {
+            if ($this->userRepo->findByUsername($request->username)) {
+                throw new Exception("Username already exists", 400);
+            }
 
-        // Business Logic: Hash Password
-        if (isset($data['password'])) {
-            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-        }
+            $request->email = strtolower($request->email);
+            if (!filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception("Invalid email format", 400);
+            }
 
-        return $this->userRepo->create($data);
+            $request->password = password_hash($request->password, PASSWORD_DEFAULT);
+
+            $created = $this->userRepo->create($request);
+            if (!$created) {
+                throw new Exception("User creation failed", 500);
+            }
+
+            $user = $this->userRepo->findByUsername($request->username);
+            if (!$user) {
+                throw new Exception("User creation failed", 500);
+            }
+            return $user;
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage(), $ex->getCode());
+        }
     }
 
     /**

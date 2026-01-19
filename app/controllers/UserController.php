@@ -1,6 +1,7 @@
 <?php
 namespace Controllers;
 
+use Models\DTO\UserCreateRequest;
 use Models\DTO\UserManyRequest;
 use Services\UserService;
 use Exception;
@@ -13,12 +14,9 @@ class UserController extends Controller
         $this->userService = new UserService();
     }
 
-    /**
-     * @throws Exception
-     */
     public function getAll() {
         try {
-            $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 1;
+            $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
             $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
             $role = $_GET['role'] ?? null;
 
@@ -37,19 +35,17 @@ class UserController extends Controller
     }
 
     public function newUser() {
-        $newUser = $this->requestObjectFromPostedJson(UserCreateRequest::class);
-
         if (!isset($input['email'], $input['password'])) {
             $this->respondWithError(400, "Missing email or password");
         }
 
+        $newUserRequest = $this->requestObjectFromPostedJson(UserCreateRequest::class);
+
         try {
-            $newId = $this->userService->registerUser($input);
-            http_response_code(201);
-            echo json_encode(['message' => 'User created', 'id' => $newId]);
-        } catch (\Exception $e) {
-            http_response_code(400); // 400 Bad Request usually better for "Email exists"
-            echo json_encode(['error' => $e->getMessage()]);
+            $newUser = $this->userService->registerUser($newUserRequest);
+            $this->respond($newUser);
+        } catch (Exception $e) {
+            $this->respondWithError($e->getCode(), $e->getMessage());
         }
     }
 

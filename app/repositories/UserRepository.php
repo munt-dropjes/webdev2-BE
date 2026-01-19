@@ -1,6 +1,7 @@
 <?php
 namespace Repositories;
 
+use Models\DTO\UserCreateRequest;
 use Models\DTO\UserManyRequest;
 use Models\User;
 use PDO;
@@ -44,7 +45,7 @@ class UserRepository extends Repository {
     /**
      * @throws Exception
      */
-    public function findByUsername(string $username) {
+    public function findByUsername(string $username) : User {
         try {
             $stmt = $this->connection->prepare("SELECT id, username, email, password, role, created_at FROM users WHERE username = :username");
             $stmt->bindParam(":username", $username, PDO::PARAM_STR);
@@ -76,14 +77,14 @@ class UserRepository extends Repository {
     /**
      * @throws Exception
      */
-    public function create(User $user): bool {
+    public function create(UserCreateRequest $request): bool {
         try {
             $sql = "INSERT INTO users (username, email, password, role) VALUES (:username, :email, :password, :role)";
             $stmt = $this->connection->prepare($sql);
-            $stmt->bindParam(":username", $user->username, PDO::PARAM_STR);
-            $stmt->bindParam(":email", $user->email, PDO::PARAM_STR);
-            $stmt->bindParam(":password", $user->password, PDO::PARAM_STR);
-            $stmt->bindParam(":role", $user->role, PDO::PARAM_STR);
+            $stmt->bindParam(":username", $request->username, PDO::PARAM_STR);
+            $stmt->bindParam(":email", $request->email, PDO::PARAM_STR);
+            $stmt->bindParam(":password", $request->password, PDO::PARAM_STR);
+            $stmt->bindParam(":role", $request->role, PDO::PARAM_STR);
             return $stmt->execute();
         } catch (Exception $e) {
             throw new Exception("Database Exception: " . $e->getMessage(), 500);
