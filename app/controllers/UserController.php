@@ -1,51 +1,46 @@
 <?php
 namespace Controllers;
 
-use Config\Database;
-use Repositories\UserRepository;
+use Models\DTO\UserManyRequest;
 use Services\UserService;
+use Exception;
 
-class UserController {
+class UserController extends Controller
+{
     private UserService $userService;
 
     public function __construct() {
-        // Dependency Injection Setup
-        $db = Database::getConnection();
-        $repo = new UserRepository($db);
-        $this->userService = new UserService($repo);
+        $this->userService = new UserService();
     }
 
-    public function index() {
-        // 1. Pagination Logic
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
-        $offset = ($page - 1) * $limit;
+    /**
+     * @throws Exception
+     */
+    public function getAll() {
+        try {
+            $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 1;
+            $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
+            $role = $_GET['role'] ?? null;
 
-        // 2. Filtering Logic
-        $filters = [];
-        if (isset($_GET['role'])) $filters['role'] = $_GET['role'];
+            $request = UserManyRequest::Create($limit, $offset, $role);
 
-        // 3. Fetch Data
-        $users = $this->userRepo->findAll($filters, $limit, $offset);
+            $users = $this->userService->getAllUsers($request);
+        } catch (Exception $e){
+            $this->respondWithError($e->getCode(), $e->getMessage());
+        }
 
-        // 4. Return Response
-        header('Content-Type: application/json');
-        echo json_encode([
-            'data' => $users,
-            'meta' => [
-                'page' => $page,
-                'limit' => $limit
-            ]
-        ]);
+        if(!empty($users)) {
+            $this->respond($users);
+        } else {
+            $this->respondWithError(204, "No users found");
+        }
     }
 
-    public function store() {
-        $input = json_decode(file_get_contents('php://input'), true);
+    public function newUser() {
+        $newUser = $this->requestObjectFromPostedJson(UserCreateRequest::class);
 
         if (!isset($input['email'], $input['password'])) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Missing required fields']);
-            exit;
+            $this->respondWithError(400, "Missing email or password");
         }
 
         try {
@@ -63,7 +58,7 @@ class UserController {
         $input = json_decode(file_get_contents('php://input'), true);
 
         // 1. Check if user exists
-        $user = $this->userRepo->findById($id);
+        $user = $this->userService->findById($id);
         if (!$user) {
             http_response_code(404);
             echo json_encode(['error' => 'User not found']);
@@ -72,10 +67,10 @@ class UserController {
 
         // 2. Perform Update
         try {
-            $this->userRepo->update($id, $input);
+            $this->userService->update($id, $input);
 
             // 3. Return updated object
-            $updatedUser = $this->userRepo->findById($id);
+            $updatedUser = $this->userService->findById($id);
             echo json_encode([
                 'message' => 'User updated',
                 'data' => $updatedUser
@@ -88,7 +83,7 @@ class UserController {
 
     // DELETE /api/users/{id}
     public function destroy($id) {
-        $user = $this->userRepo->findById($id);
+        $user = $this->userService->findById($id);
         if (!$user) {
             http_response_code(404);
             echo json_encode(['error' => 'User not found']);
@@ -96,7 +91,7 @@ class UserController {
         }
 
         try {
-            $this->userRepo->delete($id);
+            $this->userService->delete($id);
             http_response_code(200);
             echo json_encode(['message' => 'User deleted successfully']);
         } catch (\Exception $e) {

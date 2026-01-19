@@ -1,21 +1,22 @@
 <?php
 namespace Services;
 
+use Models\DTO\UserManyRequest;
 use Repositories\UserRepository;
 use Exception;
 
 class UserService {
     private UserRepository $userRepo;
 
-    public function __construct(UserRepository $userRepo) {
-        $this->userRepo = $userRepo;
+    public function __construct() {
+        $this->userRepo = new UserRepository();
     }
 
     /**
      * @throws Exception
      */
-    public function getAllUsers(array $filters, int $offset, int $limit): array {
-        return $this->userRepo->findAll($filters, $limit, $offset);
+    public function getAllUsers(UserManyRequest $request): array {
+        return $this->userRepo->findAll($request);
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 namespace Repositories;
 
+use Models\DTO\UserManyRequest;
 use Models\User;
 use PDO;
 use Exception;
@@ -9,7 +10,7 @@ class UserRepository extends Repository {
     /**
      * @throws Exception
      */
-    public function findAll(array $filters, int $limit, int $offset): array {
+    public function findAll(UserManyRequest $request): array {
         try {
             $sql = "SELECT id, username, email, role, created_at FROM users WHERE 1=1";
             $params = [];
@@ -29,8 +30,8 @@ class UserRepository extends Repository {
             foreach ($params as $key => $val) {
                 $stmt->bindValue($key, $val);
             }
-            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->bindValue(':limit', $request->limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $request->offset, PDO::PARAM_INT);
             $stmt->execute();
 
             $stmt->setFetchMode(PDO::FETCH_CLASS, User::class);
