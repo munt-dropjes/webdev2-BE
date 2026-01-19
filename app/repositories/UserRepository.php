@@ -18,9 +18,9 @@ class UserRepository extends Repository {
             $params = [];
 
             // Filtering
-            if (isset($filters['role'])) {
+            if (isset($request->role)) {
                 $sql .= " AND role = :role";
-                $params[':role'] = $filters['role'];
+                $params[':role'] = $request->role;
             }
 
             // Pagination
@@ -46,7 +46,7 @@ class UserRepository extends Repository {
     /**
      * @throws Exception
      */
-    public function findByUsername(string $username) : User {
+    public function findByUsername(string $username) : ?User {
         try {
             $stmt = $this->connection->prepare("SELECT id, username, email, password, role, created_at FROM users WHERE username = :username");
             $stmt->bindParam(":username", $username, PDO::PARAM_STR);

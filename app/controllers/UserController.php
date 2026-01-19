@@ -51,11 +51,11 @@ class UserController extends Controller
     }
 
     public function newUser() {
-        if (!isset($input['email'], $input['password'], $input['username'])) {
+        $newUserRequest = $this->requestObjectFromPostedJson(UserCreateRequest::class);
+
+        if (!$newUserRequest->email || !$newUserRequest->password || !$newUserRequest->username){
             $this->respondWithError(400, "Missing fields: email, username, password are required");
         }
-
-        $newUserRequest = $this->requestObjectFromPostedJson(UserCreateRequest::class);
 
         try {
             $newUser = $this->userService->registerUser($newUserRequest);
