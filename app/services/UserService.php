@@ -24,6 +24,13 @@ class UserService {
     /**
      * @throws Exception
      */
+    public function getById(int $id): ?User {
+        return $this->userRepo->findById($id);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function registerUser(UserCreateRequest $request): User {
         try {
             if ($this->userRepo->findByUsername($request->username)) {

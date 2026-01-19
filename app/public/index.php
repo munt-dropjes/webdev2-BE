@@ -36,10 +36,11 @@ $router->mount('/api', function() use ($router, $auth) {
 
     // Users Resource
     $router->mount('/users', function() use ($router, $auth) {
-        $router->get('/', 'Controllers\UserController@index');
-        $router->post('/', 'Controllers\UserController@store');
-        $router->put('/(\d+)', 'Controllers\UserController@update');
-        $router->delete('/(\d+)', 'Controllers\UserController@destroy');
+        $router->get('/', 'Controllers\UserController@getAll');
+        $router->get('/{id}', 'Controllers\UserController@getById');
+        $router->post('/', 'Controllers\UserController@newUser');
+        $router->put('/{id}', 'Controllers\UserController@update');
+        $router->delete('/{id}', 'Controllers\UserController@destroy');
     });
 
     $router->mount('/families', function() use ($router, $auth) {

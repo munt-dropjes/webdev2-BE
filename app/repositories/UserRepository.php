@@ -61,7 +61,7 @@ class UserRepository extends Repository {
     /**
      * @throws Exception
      */
-    public function findById(int $id) {
+    public function findById(int $id) : ?User {
         try {
             $stmt = $this->connection->prepare("SELECT id, username, email, role, created_at FROM users WHERE id = :id");
             $stmt->bindParam(":id", $id, PDO::PARAM_INT);

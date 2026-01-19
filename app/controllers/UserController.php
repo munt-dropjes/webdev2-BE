@@ -34,6 +34,20 @@ class UserController extends Controller
         }
     }
 
+    public function getById() {
+        try {
+            $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+            $user = $this->userService->getById($id);
+            if ($user) {
+                $this->respond($user);
+            } else {
+                $this->respondWithError(404, "User not found");
+            }
+        } catch (Exception $e) {
+            $this->respondWithError($e->getCode(), $e->getMessage());
+        }
+    }
+
     public function newUser() {
         if (!isset($input['email'], $input['password'])) {
             $this->respondWithError(400, "Missing email or password");
