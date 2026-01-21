@@ -20,7 +20,14 @@ class UserService {
      * @throws Exception
      */
     public function getAllUsers(UserManyRequest $request): array {
-        return $this->userRepo->findAll($request);
+        $users = $this->userRepo->findAll($request);
+
+        $response = [];
+        foreach ($users as $user) {
+            $response[] = UserResponse::CreateFromUser($user);
+        }
+
+        return $response;
     }
 
     /**
