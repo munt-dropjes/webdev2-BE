@@ -51,6 +51,13 @@ $router->mount('/api', function() use ($router, $auth) {
         $router->post('/', 'Controllers\TransactionController@create');
         $router->get('/history', 'Controllers\TransactionController@history');
     });
+
+    $router->mount('/stocks', function() use ($router, $auth) {
+        $router->get('/', 'Controllers\StockController@getAllStocks');
+        $router->get('/bank', 'Controllers\StockController@getBankStocks');
+        $router->get('/company/{companyId}', 'Controllers\StockController@getCompanyStocks');
+        $router->post('/trade', 'Controllers\StockController@trade');
+    });
 });
 
 $router->set404(function() {
