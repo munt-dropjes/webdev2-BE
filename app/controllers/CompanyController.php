@@ -3,15 +3,12 @@ namespace Controllers;
 
 use Exception;
 use Services\CompanyService;
-use Services\TransactionService;
 
 class CompanyController extends Controller{
-    private TransactionService $transactionService;
     private CompanyService $companyService;
 
     function __construct()
     {
-        $this->transactionService = new TransactionService();
         $this->companyService = new CompanyService();
     }
 
@@ -24,5 +21,17 @@ class CompanyController extends Controller{
             $this->respondWithError(500, $e->getMessage());
         }
 
+    }
+
+    public function getById($id){
+        try {
+            $company = $this->companyService->getById((int)$id);
+            if (!$company) {
+                $this->respondWithError(404, "Company not found");
+            }
+            $this->respond($company);
+        } catch (Exception $e) {
+            $this->respondWithError(500, $e->getMessage());
+        }
     }
 }

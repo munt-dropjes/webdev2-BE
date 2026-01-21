@@ -45,6 +45,7 @@ $router->mount('/api', function() use ($router, $auth) {
 
     $router->mount('/companies', function() use ($router, $auth) {
         $router->get('/', 'Controllers\CompanyController@getAll');
+        $router->get('/{id}', 'Controllers\CompanyController@getById');
     });
 
     $router->mount('/transactions', function() use ($router, $auth) {
