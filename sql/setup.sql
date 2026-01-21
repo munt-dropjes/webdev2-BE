@@ -8,6 +8,7 @@ FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `transactions`;
 DROP TABLE IF EXISTS `companies`;
 DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `shares`;
 
 -- --------------------------------------------------------
 -- 2. Create Users Table
@@ -58,14 +59,30 @@ CREATE TABLE `transactions`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
--- 5. Seed Users
+-- 5. Create Shares Table (Portfolio)
+-- Matches app/models/Share.php
+-- --------------------------------------------------------
+CREATE TABLE `shares`
+(
+    `id`         int(11) NOT NULL AUTO_INCREMENT,
+    `company_id` int(11) NOT NULL,     -- The company BEING owned
+    `owner_id`   int(11) DEFAULT NULL, -- The owner. NULL = THE BANK.
+    `amount`     int(11) NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_ownership` (`company_id`, `owner_id`),
+    CONSTRAINT `fk_share_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_share_owner` FOREIGN KEY (`owner_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+-- 6. Seed Users
 -- --------------------------------------------------------
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `created_at`)
 VALUES (1, 'StockMaster', 'admin@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'admin',
         '2026-01-07 10:38:14');
 
 -- --------------------------------------------------------
--- 6. Seed Companies (Defaults)
+-- 7. Seed Companies (Defaults)
 -- --------------------------------------------------------
 INSERT INTO `companies` (`name`, `color`, `cash`)
 VALUES ('Haviken', '#ff69b4', 100000),
@@ -73,6 +90,20 @@ VALUES ('Haviken', '#ff69b4', 100000),
        ('Sperwers', '#ffc107', 100000),
        ('Zwaluwen', '#0d6efd', 100000),
        ('Valken', '#fd7e14', 100000);
+
+-- --------------------------------------------------------
+-- 8. Seed Shares (Initial Portfolio)
+-- --------------------------------------------------------
+-- Example: 5 Companies. Total 100 shares each.
+-- Each company keeps 20 shares of itself.
+INSERT INTO `shares` (`company_id`, `owner_id`, `amount`)
+SELECT `id`, `id`, 20
+FROM `companies`;
+
+-- The Bank (NULL owner) holds the remaining 80 shares for each company
+INSERT INTO `shares` (`company_id`, `owner_id`, `amount`)
+SELECT `id`, NULL, 80
+FROM `companies`;
 
 SET
 FOREIGN_KEY_CHECKS = 1;
