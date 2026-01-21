@@ -5,10 +5,11 @@ FOREIGN_KEY_CHECKS = 0;
 -- --------------------------------------------------------
 -- 1. Reset Database (Optional: Clear old tables)
 -- --------------------------------------------------------
+DROP TABLE IF EXISTS `companies_history`;
 DROP TABLE IF EXISTS `transactions`;
+DROP TABLE IF EXISTS `shares`;
 DROP TABLE IF EXISTS `companies`;
 DROP TABLE IF EXISTS `users`;
-DROP TABLE IF EXISTS `shares`;
 
 -- --------------------------------------------------------
 -- 2. Create Users Table
@@ -75,14 +76,28 @@ CREATE TABLE `shares`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
--- 6. Seed Users
+-- 6. Create Companies History Table
+-- --------------------------------------------------------
+CREATE TABLE `companies_history` (
+                                     `id` int(11) NOT NULL AUTO_INCREMENT,
+                                     `company_id` int(11) NOT NULL,
+                                     `net_worth` int(11) NOT NULL,
+                                     `stock_price` int(11) NOT NULL,
+                                     `recorded_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                     PRIMARY KEY (`id`),
+                                     KEY `idx_recorded_at` (`recorded_at`),
+                                     CONSTRAINT `fk_hist_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+-- 7. Seed Users
 -- --------------------------------------------------------
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `created_at`)
 VALUES (1, 'StockMaster', 'admin@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'admin',
         '2026-01-07 10:38:14');
 
 -- --------------------------------------------------------
--- 7. Seed Companies (Defaults)
+-- 8. Seed Companies (Defaults)
 -- --------------------------------------------------------
 INSERT INTO `companies` (`name`, `color`, `cash`)
 VALUES ('Haviken', '#ff69b4', 100000),
@@ -92,17 +107,25 @@ VALUES ('Haviken', '#ff69b4', 100000),
        ('Valken', '#fd7e14', 100000);
 
 -- --------------------------------------------------------
--- 8. Seed Shares (Initial Portfolio)
+-- 9. Seed Shares (Initial Portfolio)
 -- --------------------------------------------------------
 -- Example: 5 Companies. Total 100 shares each.
--- Each company keeps 20 shares of itself.
+-- A. Own Shares: Each company starts with 25 shares of itself.
 INSERT INTO `shares` (`company_id`, `owner_id`, `amount`)
-SELECT `id`, `id`, 20
+SELECT `id`, `id`, 25
 FROM `companies`;
 
--- The Bank (NULL owner) holds the remaining 80 shares for each company
+-- B. Cross Ownership: Each company starts with 5 shares of every OTHER company.
+-- We join the companies table with itself to create every possible pair (A owns B), excluding self-ownership.
 INSERT INTO `shares` (`company_id`, `owner_id`, `amount`)
-SELECT `id`, NULL, 80
+SELECT target.id, owner.id, 5
+FROM `companies` target
+         JOIN `companies` owner ON target.id != owner.id;
+
+-- C. Bank Shares: The Bank holds the rest (55 shares).
+-- Calculation: 100 Total - 25 Own - (4 neighbors * 5 shares) = 55 Remaining.
+INSERT INTO `shares` (`company_id`, `owner_id`, `amount`)
+SELECT `id`, NULL, 55
 FROM `companies`;
 
 SET
