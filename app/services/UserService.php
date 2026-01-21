@@ -3,6 +3,7 @@ namespace Services;
 
 use Models\DTO\UserCreateRequest;
 use Models\DTO\UserManyRequest;
+use Models\DTO\UserResponse;
 use Models\DTO\UserUpdateRequest;
 use models\User;
 use Repositories\UserRepository;
@@ -25,14 +26,14 @@ class UserService {
     /**
      * @throws Exception
      */
-    public function getById(int $id): ?User {
-        return $this->userRepo->findById($id);
+    public function getById(int $id): ?UserResponse {
+        return UserResponse::CreateFromUser($this->userRepo->findById($id));
     }
 
     /**
      * @throws Exception
      */
-    public function registerUser(UserCreateRequest $request): User {
+    public function registerUser(UserCreateRequest $request): UserResponse {
         try {
             if ($this->userRepo->findByUsername($request->username)) {
                 throw new Exception("Username already exists", 400);
@@ -50,7 +51,7 @@ class UserService {
                 throw new Exception("User creation failed", 500);
             }
 
-            return $this->userRepo->findByUsername($request->username);
+            return UserResponse::CreateFromUser($this->userRepo->findByUsername($request->username));
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage(), $ex->getCode());
         }
@@ -59,9 +60,9 @@ class UserService {
     /**
      * @throws Exception
      */
-    public function updateUser(int $id, UserUpdateRequest $request): User {
+    public function updateUser(int $id, UserUpdateRequest $request): UserResponse {
         try {
-            $user = $this->getById($id);
+            $user = $this->userRepo->findById($id);
             if (!$user) {
                 throw new Exception("User not found", 404);
             }
@@ -79,7 +80,7 @@ class UserService {
             $updatingUser->role = $request->role ?? $user->role;
 
             $this->userRepo->update($updatingUser);
-            return $this->userRepo->findById($id);
+            return UserResponse::CreateFromUser($this->userRepo->findById($id));
         } catch (Exception $ex) {
             throw new Exception($ex->getMessage(), $ex->getCode());
         }

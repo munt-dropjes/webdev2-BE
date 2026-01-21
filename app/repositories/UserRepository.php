@@ -53,7 +53,8 @@ class UserRepository extends Repository {
             $stmt->execute();
 
             $stmt->setFetchMode(PDO::FETCH_CLASS, User::class);
-            return $stmt->fetch();
+            $result = $stmt->fetch();
+            return $result === false ? null : $result;
         } catch (Exception $e) {
             throw new Exception("Database Exception: " . $e->getMessage(), 500);
         }
@@ -69,7 +70,8 @@ class UserRepository extends Repository {
             $stmt->execute();
 
             $stmt->setFetchMode(PDO::FETCH_CLASS, User::class);
-            return $stmt->fetch();
+            $result = $stmt->fetch();
+            return $result === false ? null : $result;
         } catch (Exception $e) {
             throw new Exception("Database Exception: " . $e->getMessage(), 500);
         }

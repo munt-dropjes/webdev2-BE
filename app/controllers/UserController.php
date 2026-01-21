@@ -38,7 +38,6 @@ class UserController extends Controller
 
     public function getById(int $id) {
         try {
-            $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
             $user = $this->userService->getById($id);
             if ($user) {
                 $this->respond($user);
