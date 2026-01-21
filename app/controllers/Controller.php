@@ -42,6 +42,10 @@ class Controller
         $json = file_get_contents('php://input');
         $data = json_decode($json);
 
+        if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+            $this->respondWithError(400, "Invalid JSON provided");
+        }
+
         $object = new $className();
         foreach ($data as $key => $value) {
             if(is_object($value)) {
