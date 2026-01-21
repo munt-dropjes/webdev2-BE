@@ -1,8 +1,6 @@
 <?php
 namespace Services;
 
-use Models\Company;
-use Models\DTO\BaseManyRequest;
 use Models\DTO\TransactionCreateRequest;
 use Repositories\CompanyRepository;
 use Exception;
@@ -23,14 +21,14 @@ class TransactionService {
             throw new Exception("Amount cannot be zero", 400);
         }
 
-        if (empty($request->reason)) {
-            throw new Exception("Reason is required", 400);
+        if (empty($request->description)) {
+            throw new Exception("Description is required", 400);
         }
 
         // Business Logic: Check if company exists
         $company = $this->companyRepo->findById($request->company_id);
         if (!$company) {
-            throw new Exception("Family not found", 404);
+            throw new Exception("Company not found", 404);
         }
 
         // Optional Rule: Prevent negative balance?

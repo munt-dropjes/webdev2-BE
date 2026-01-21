@@ -3,7 +3,7 @@
 namespace Services;
 
 use Exception;
-use models\Company;
+use Models\Company;
 use Repositories\CompanyRepository;
 
 class CompanyService

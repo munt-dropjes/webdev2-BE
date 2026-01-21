@@ -1,10 +1,9 @@
 <?php
 namespace Repositories;
 
-use models\Company;
-use Models\DTO\BaseManyRequest;
+use Models\Company;
 use Models\DTO\TransactionCreateRequest;
-use models\Transaction;
+use Models\Transaction;
 use PDO;
 use Exception;
 
@@ -30,7 +29,7 @@ class CompanyRepository extends Repository {
      */
     public function findById(int $id): ?Company {
         try {
-            $stmt = $this->connection->prepare("SELECT id, name, color, cash FROM families WHERE id = :id");
+            $stmt = $this->connection->prepare("SELECT id, name, color, cash FROM companies WHERE id = :id");
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
 
