@@ -5,6 +5,7 @@ namespace Services;
 use Exception;
 use Models\Company;
 use Repositories\CompanyRepository;
+use Repositories\HistoryRepository;
 use Repositories\StockRepository;
 
 class CompanyService
@@ -34,15 +35,11 @@ class CompanyService
         $company = $this->companyRepo->findById($id);
         if (!$company) return null;
 
-        // For a single company, we still need the global context (other companies' cash)
-        // to calculate the value of the stocks this company owns.
-        // Optimization: In a huge app, we would optimize this. For now, fetching all is safe.
         $allCompanies = $this->companyRepo->findAll();
         $shares = $this->stockRepo->getAllActiveShares();
 
         $enrichedAll = $this->calculateValuations($allCompanies, $shares);
 
-        // Find and return the specific company from the enriched list
         foreach ($enrichedAll as $c) {
             if ($c->id === $id) return $c;
         }

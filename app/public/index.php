@@ -48,9 +48,14 @@ $router->mount('/api', function() use ($router, $auth) {
         $router->get('/{id}', 'Controllers\CompanyController@getById');
     });
 
+    $router->mount('/history', function() use ($router, $auth) {
+        $router->post('/save', 'Controllers\HistoryController@saveHistory');
+        $router->get('/{dateTime}', 'Controllers\HistoryController@getHistorySince');
+    });
+
     $router->mount('/transactions', function() use ($router, $auth) {
         $router->post('/', 'Controllers\TransactionController@create');
-        $router->get('/history', 'Controllers\TransactionController@history');
+        $router->get('/', 'Controllers\TransactionController@history');
     });
 
     $router->mount('/stocks', function() use ($router, $auth) {
