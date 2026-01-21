@@ -43,15 +43,14 @@ $router->mount('/api', function() use ($router, $auth) {
         $router->delete('/{id}', 'Controllers\UserController@deleteUser');
     });
 
-    $router->mount('/families', function() use ($router, $auth) {
-        $router->get('/', 'Controllers\FamilyController@index');
+    $router->mount('/companies', function() use ($router, $auth) {
+        $router->get('/', 'Controllers\CompanyController@getAll');
     });
 
     $router->mount('/transactions', function() use ($router, $auth) {
-        $router->post('/', 'Controllers\FamilyController@transaction');
+        $router->post('/', 'Controllers\TransactionController@create');
+        $router->get('/history', 'Controllers\TransactionController@history');
     });
-
-    $router->get('/history', 'Controllers\FamilyController@history');
 });
 
 $router->set404(function() {

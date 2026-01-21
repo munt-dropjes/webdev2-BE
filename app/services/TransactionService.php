@@ -1,38 +1,52 @@
 <?php
 namespace Services;
 
-use Repositories\FamilyRepository;
+use Models\Company;
+use Models\DTO\BaseManyRequest;
+use Models\DTO\TransactionCreateRequest;
+use Repositories\CompanyRepository;
 use Exception;
 
 class TransactionService {
-    private FamilyRepository $familyRepo;
+    private CompanyRepository $companyRepo;
 
-    public function __construct(FamilyRepository $familyRepo) {
-        $this->familyRepo = $familyRepo;
+    public function __construct() {
+        $this->companyRepo = new CompanyRepository();
     }
 
-    public function processTransaction(int $familyId, float $amount, string $reason): void {
+    /**
+     * @throws Exception
+     */
+    public function processTransaction(TransactionCreateRequest $request): void {
         // Business Logic: Validation
-        if ($amount == 0) {
-            throw new Exception("Transaction amount cannot be zero");
+        if ($request->amount == 0) {
+            throw new Exception("Amount cannot be zero", 400);
         }
 
-        // Business Logic: Check Family existence
-        // (We could check if family exists here, or let the repo handle the exception)
+        if (empty($request->reason)) {
+            throw new Exception("Reason is required", 400);
+        }
 
-        // Example Rule: Prevent debt (Optional)
-        // $currentBalance = $this->familyRepo->getBalance($familyId);
-        // if ($currentBalance + $amount < 0) throw new Exception("Insufficient funds");
+        // Business Logic: Check if company exists
+        $company = $this->companyRepo->findById($request->company_id);
+        if (!$company) {
+            throw new Exception("Family not found", 404);
+        }
 
-        // Delegate atomic update to Repository
-        $success = $this->familyRepo->updateCash($familyId, $amount, $reason);
+        // Optional Rule: Prevent negative balance?
+        // if ($family->cash + $request->amount < 0) { throw new Exception("Insufficient funds", 400); }
 
+        // Execute
+        $success = $this->companyRepo->createTransaction($request);
         if (!$success) {
-            throw new Exception("Transaction failed to process");
+            throw new Exception("Transaction could not be processed", 500);
         }
     }
 
-    public function getHistory(): array {
-        return $this->familyRepo->getTransactionHistory();
+    /**
+     * @throws Exception
+     */
+    public function getTransactionHistory(int $limit): array {
+        return $this->companyRepo->getHistory($limit);
     }
 }
