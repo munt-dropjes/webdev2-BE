@@ -179,13 +179,14 @@ paths:
   /login:
     post:
       summary: User Login
-      tags: [Auth]
+      tags: [ Auth ]
       requestBody:
         content:
           application/json:
             schema: { $ref: '#/components/schemas/LoginRequest' }
       responses:
         200:
+          description: "Successful login"
           content:
             application/json:
               schema: { $ref: '#/components/schemas/LoginResponse' }
@@ -193,39 +194,41 @@ paths:
   /ping:
     get:
       summary: Health Check
-      tags: [System]
+      tags: [ System ]
       responses:
-        200: { description: OK }
+        200: { description: "OK" }
 
   /diagnostics:
     get:
       summary: System Diagnostics
-      tags: [System]
+      tags: [ System ]
       responses:
-        200: { description: OK }
+        200: { description: "OK" }
 
   # --- Protected ---
   # USERS
   /api/users:
     get:
       summary: Get All Users
-      tags: [Users]
-      security: [{ bearerAuth: [] }]
+      tags: [ Users ]
+      security: [ { bearerAuth: [ ] } ]
       responses:
         200:
+          description: "Get list of users"
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/UserResponse' } }
     post:
       summary: Create User
-      tags: [Users]
-      security: [{ bearerAuth: [] }]
+      tags: [ Users ]
+      security: [ { bearerAuth: [ ] } ]
       requestBody:
         content:
           application/json:
             schema: { $ref: '#/components/schemas/UserCreateRequest' }
       responses:
         200:
+          description: "Created user"
           content:
             application/json:
               schema: { $ref: '#/components/schemas/UserResponse' }
@@ -233,19 +236,20 @@ paths:
   /api/users/{id}:
     get:
       summary: Get User by ID
-      tags: [Users]
-      security: [{ bearerAuth: [] }]
+      tags: [ Users ]
+      security: [ { bearerAuth: [ ] } ]
       parameters:
         - { in: path, name: id, required: true, schema: { type: integer } }
       responses:
         200:
+          description: "Get user details by ID"
           content:
             application/json:
               schema: { $ref: '#/components/schemas/UserResponse' }
     put:
       summary: Update User
-      tags: [Users]
-      security: [{ bearerAuth: [] }]
+      tags: [ Users ]
+      security: [ { bearerAuth: [ ] } ]
       parameters:
         - { in: path, name: id, required: true, schema: { type: integer } }
       requestBody:
@@ -254,13 +258,14 @@ paths:
             schema: { $ref: '#/components/schemas/UserUpdateRequest' }
       responses:
         200:
+          description: "Updated user details"
           content:
             application/json:
               schema: { $ref: '#/components/schemas/UserResponse' }
     delete:
       summary: Delete User
-      tags: [Users]
-      security: [{ bearerAuth: [] }]
+      tags: [ Users ]
+      security: [ { bearerAuth: [ ] } ]
       parameters:
         - { in: path, name: id, required: true, schema: { type: integer } }
       responses:
@@ -270,10 +275,11 @@ paths:
   /api/companies:
     get:
       summary: Get All Companies
-      tags: [Companies]
-      security: [{ bearerAuth: [] }]
+      tags: [ Companies ]
+      security: [ { bearerAuth: [ ] } ]
       responses:
         200:
+          description: Get list of companies
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/Company' } }
@@ -281,12 +287,13 @@ paths:
   /api/companies/{id}:
     get:
       summary: Get Company Details
-      tags: [Companies]
-      security: [{ bearerAuth: [] }]
+      tags: [ Companies ]
+      security: [ { bearerAuth: [ ] } ]
       parameters:
         - { in: path, name: id, required: true, schema: { type: integer } }
       responses:
         200:
+          description: Get company details by ID
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Company' }
@@ -296,10 +303,11 @@ paths:
     get:
       summary: Get All Tasks
       description: Returns list of tasks with current completion status and rewards.
-      tags: [Tasks]
-      security: [{ bearerAuth: [] }]
+      tags: [ Tasks ]
+      security: [ { bearerAuth: [ ] } ]
       responses:
         200:
+          description: Get list of tasks
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/Task' } }
@@ -308,14 +316,15 @@ paths:
     post:
       summary: Complete a Task
       description: Validates completion, calculates rank, assigns reward, and returns result.
-      tags: [Tasks]
-      security: [{ bearerAuth: [] }]
+      tags: [ Tasks ]
+      security: [ { bearerAuth: [ ] } ]
       requestBody:
         content:
           application/json:
             schema: { $ref: '#/components/schemas/TaskCompleteRequest' }
       responses:
         200:
+          description: Task completed successfully
           content:
             application/json:
               schema: { $ref: '#/components/schemas/TaskCompletionResponse' }
@@ -330,8 +339,8 @@ paths:
     post:
       summary: Trigger Snapshot Save
       description: "Triggered by frontend/cron. Checks if snapshot exists for current minute; if not, saves it."
-      tags: [History]
-      security: [{ bearerAuth: [] }]
+      tags: [ History ]
+      security: [ { bearerAuth: [ ] } ]
       responses:
         200:
           description: "Status object indicating saved or skipped"
@@ -347,8 +356,8 @@ paths:
     get:
       summary: Get History Since
       description: "Get historical valuation points since the provided datetime."
-      tags: [History]
-      security: [{ bearerAuth: [] }]
+      tags: [ History ]
+      security: [ { bearerAuth: [ ] } ]
       parameters:
         - in: path
           name: dateTime
@@ -357,6 +366,7 @@ paths:
           description: "URL encoded datetime string"
       responses:
         200:
+          description: "List of historical valuation points since the given datetime"
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/HistoryPoint' } }
@@ -365,17 +375,18 @@ paths:
   /api/transactions:
     get:
       summary: Get Transaction History
-      tags: [Transactions]
-      security: [{ bearerAuth: [] }]
+      tags: [ Transactions ]
+      security: [ { bearerAuth: [ ] } ]
       responses:
         200:
+          description: "List of all transactions"
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/Transaction' } }
     post:
       summary: Create Manual Transaction
-      tags: [Transactions]
-      security: [{ bearerAuth: [] }]
+      tags: [ Transactions ]
+      security: [ { bearerAuth: [ ] } ]
       requestBody:
         content:
           application/json:
@@ -388,10 +399,11 @@ paths:
     get:
       summary: Get All Active Shares
       description: "List of all shares owned by anyone (Companies or Bank)."
-      tags: [Stocks]
-      security: [{ bearerAuth: [] }]
+      tags: [ Stocks ]
+      security: [ { bearerAuth: [ ] } ]
       responses:
         200:
+          description: "List of all active shares"
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/Share' } }
@@ -400,10 +412,11 @@ paths:
     get:
       summary: Get Bank Portfolio
       description: "Stocks held by the Bank (available for purchase)."
-      tags: [Stocks]
-      security: [{ bearerAuth: [] }]
+      tags: [ Stocks ]
+      security: [ { bearerAuth: [ ] } ]
       responses:
         200:
+          description: "Bank stock portfolio"
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/Share' } }
@@ -412,12 +425,13 @@ paths:
     get:
       summary: Get Company Portfolio
       description: "Stocks held by a specific company."
-      tags: [Stocks]
-      security: [{ bearerAuth: [] }]
+      tags: [ Stocks ]
+      security: [ { bearerAuth: [ ] } ]
       parameters:
         - { in: path, name: companyId, required: true, schema: { type: integer } }
       responses:
         200:
+          description: "Company stock portfolio"
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/Share' } }
@@ -426,8 +440,8 @@ paths:
     post:
       summary: Execute Stock Trade
       description: "Buy/Sell stock. Use seller_id: null to buy from Bank."
-      tags: [Stocks]
-      security: [{ bearerAuth: [] }]
+      tags: [ Stocks ]
+      security: [ { bearerAuth: [ ] } ]
       requestBody:
         required: true
         content:
@@ -435,6 +449,7 @@ paths:
             schema: { $ref: '#/components/schemas/TradeStockRequest' }
       responses:
         200:
+          description: "Trade executed successfully"
           content:
             application/json:
               schema:
