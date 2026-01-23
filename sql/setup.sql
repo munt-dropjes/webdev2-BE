@@ -61,7 +61,7 @@ CREATE TABLE `transactions`
 
 -- --------------------------------------------------------
 -- 5. Create Shares Table (Portfolio)
--- Matches app/models/Share.php
+-- Matches app/models/Stock.php
 -- --------------------------------------------------------
 CREATE TABLE `shares`
 (

@@ -2,7 +2,7 @@
 
 namespace Models;
 
-class Share
+class Stock
 {
     public int $company_id;
     public string $company_name;

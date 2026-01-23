@@ -1,8 +1,8 @@
 <?php
 namespace Repositories;
 
-use Models\DTO\TradeStockRequest;
-use Models\Share;
+use Models\DTO\StockTradeRequest;
+use Models\Stock;
 use PDO;
 use Exception;
 
@@ -22,7 +22,7 @@ class StockRepository extends Repository {
         if ($ownerId !== null) $stmt->bindParam(':oid', $ownerId);
 
         $stmt->execute();
-        $stmt->setFetchMode(PDO::FETCH_CLASS, Share::class);
+        $stmt->setFetchMode(PDO::FETCH_CLASS, Stock::class);
         return $stmt->fetchAll();
     }
 
@@ -41,7 +41,7 @@ class StockRepository extends Repository {
     /**
      * @throws Exception
      */
-    public function executeTrade(TradeStockRequest $req, int $totalCost): void {
+    public function executeTrade(StockTradeRequest $req, int $totalCost): void {
         try {
             $this->connection->beginTransaction();
 

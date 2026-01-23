@@ -2,7 +2,7 @@
 
 namespace Models\DTO;
 
-class TradeStockRequest
+class StockTradeRequest
 {
     public int $buyer_id;
     public ?int $seller_id;

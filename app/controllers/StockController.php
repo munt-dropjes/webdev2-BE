@@ -3,7 +3,7 @@
 namespace Controllers;
 
 use Exception;
-use Models\DTO\TradeStockRequest;
+use Models\DTO\StockTradeRequest;
 use Services\StockService;
 
 class StockController extends Controller
@@ -29,7 +29,7 @@ class StockController extends Controller
 
     public function trade(){
         try {
-            $request = $this->requestObjectFromPostedJson(TradeStockRequest::class);
+            $request = $this->requestObjectFromPostedJson(StockTradeRequest::class);
             if (!isset($request->buyer_id, $request->stock_company_id, $request->amount)) {
                 $this->respondWithError(400, "Missing fields");
             }

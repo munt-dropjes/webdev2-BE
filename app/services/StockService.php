@@ -3,7 +3,7 @@
 namespace Services;
 
 use Exception;
-use Models\DTO\TradeStockRequest;
+use Models\DTO\StockTradeRequest;
 use Repositories\StockRepository;
 
 class StockService
@@ -31,7 +31,7 @@ class StockService
     /**
      * @throws Exception
      */
-    public function tradeStock(TradeStockRequest $request) {
+    public function tradeStock(StockTradeRequest $request) {
         if ($request->amount <= 0)
             throw new Exception("Amount must be greater than zero", 400);
         if ($request->buyer_id === $request->seller_id)
