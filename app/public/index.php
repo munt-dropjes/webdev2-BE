@@ -48,6 +48,11 @@ $router->mount('/api', function() use ($router, $auth) {
         $router->get('/{id}', 'Controllers\CompanyController@getById');
     });
 
+    $router->mount('/tasks', function() use ($router, $auth) {
+        $router->get('/', 'Controllers\TaskController@getAll');
+        $router->post('/complete', 'Controllers\TaskController@complete');
+    });
+
     $router->mount('/history', function() use ($router, $auth) {
         $router->post('/save', 'Controllers\HistoryController@saveHistory');
         $router->get('/{dateTime}', 'Controllers\HistoryController@getHistorySince');
