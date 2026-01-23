@@ -176,14 +176,13 @@ FROM `companies`;
 
 -- --------------------------------------------------------
 -- 13. Seed Task Categories
--- Note: I set P3, P4, P5 to a smaller reward. Adjust if needed.
 -- --------------------------------------------------------
-INSERT INTO `task_categories` (`label`, `reward_p1`, `reward_p2`, `reward_p3`, `reward_p4`, `reward_p5`, `penalty`)
-VALUES ('3e Klasse', 25000, 12500, 5000, 5000, 5000, -12500),
-       ('2e Klasse', 50000, 25000, 10000, 10000, 10000, -25000),
-       ('1e Klasse', 100000, 50000, 20000, 20000, 20000, -50000),
-       ('Algemeen/Overige', 50000, 25000, 10000, 10000, 10000, -25000),
-       ('Vragen', 5000, 2500, 1000, 1000, 1000, -2500);
+INSERT INTO `task_categories` (`label`, `reward_p1`, `reward_p2`, `reward_p3`, `reward_p4`, `reward_p5`)
+VALUES ('3e Klasse', 25000, 12500, 5000, -12500, -25000),
+       ('2e Klasse', 50000, 25000, 10000, -25000, -50000),
+       ('1e Klasse', 100000, 50000, 20000, -50000, -100000),
+       ('Algemeen/Overige', 50000, 25000, 10000, -25000, -50000),
+       ('Vragen', 5000, 2500, 1000, -2500, -5000);
 
 -- --------------------------------------------------------
 -- 14. Seed Tasks

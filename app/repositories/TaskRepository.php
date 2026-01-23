@@ -19,7 +19,6 @@ class TaskRepository extends Repository
                     cat.reward_p3,
                     cat.reward_p4,
                     cat.reward_p5,
-                    cat.penalty,
                     tc.company_id,
                     tc.completed_at,
                     co.name as company_name

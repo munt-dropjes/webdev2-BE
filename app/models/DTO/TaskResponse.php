@@ -2,6 +2,9 @@
 
 namespace Models\DTO;
 
+use Models\Company;
+use Models\Task;
+
 class TaskResponse
 {
     public int $company_id;
@@ -11,11 +14,11 @@ class TaskResponse
     public int $reward;
     public string $completed_at;
 
-    public static function CreateFromCompletion($company, $task, $reward): TaskResponse
+    public static function CreateFromCompletion(Company $company, Task $task, int $reward): TaskResponse
     {
         $response = new TaskResponse();
-        $response->company_id = $company->company_id;
-        $response->company_name = $company->company_name;
+        $response->company_id = $company->id;
+        $response->company_name = $company->name;
         $response->task_id = $task->id;
         $response->task_name = "$task->name - $task->category";
         $response->reward = $reward;
