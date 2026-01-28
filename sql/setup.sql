@@ -21,6 +21,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users`
 (
     `id`         int(11) NOT NULL AUTO_INCREMENT,
+    `company_id` int(11) DEFAULT NULL,
     `username`   varchar(100) NOT NULL,
     `email`      varchar(150) NOT NULL,
     `password`   varchar(255) NOT NULL,
@@ -28,7 +29,8 @@ CREATE TABLE `users`
     `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `email` (`email`),
-    UNIQUE KEY `username` (`username`)
+    UNIQUE KEY `username` (`username`),
+    CONSTRAINT `fk_user_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -143,6 +145,13 @@ CREATE TABLE `task_completions`
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `created_at`)
 VALUES (1, 'StockMaster', 'admin@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'admin',
         '2026-01-07 10:38:14');
+
+INSERT INTO `users` (`company_id`, `username`, `email`, `password`, `role`)
+VALUES  (1, 'Haviken', 'haviken@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'user'),
+        (2, 'Spechten', 'spechten@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'user'),
+        (3, 'Sperwers', 'sperwers@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'user'),
+        (4, 'Zwaluwen', 'zwaluwen@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'user'),
+        (5, 'Valken', 'valken@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'user');
 
 -- --------------------------------------------------------
 -- 11. Seed Companies

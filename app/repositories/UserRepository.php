@@ -14,7 +14,7 @@ class UserRepository extends Repository {
      */
     public function findAll(UserManyRequest $request): array {
         try {
-            $sql = "SELECT id, username, email, role, created_at FROM users WHERE 1=1";
+            $sql = "SELECT id, company_id, username, email, role, created_at FROM users WHERE 1=1";
             $params = [];
 
             // Filtering
@@ -48,7 +48,7 @@ class UserRepository extends Repository {
      */
     public function findByUsername(string $username) : ?User {
         try {
-            $stmt = $this->connection->prepare("SELECT id, username, email, password, role, created_at FROM users WHERE username = :username");
+            $stmt = $this->connection->prepare("SELECT id, company_id, username, email, password, role, created_at FROM users WHERE username = :username");
             $stmt->bindParam(":username", $username, PDO::PARAM_STR);
             $stmt->execute();
 
@@ -65,7 +65,7 @@ class UserRepository extends Repository {
      */
     public function findById(int $id) : ?User {
         try {
-            $stmt = $this->connection->prepare("SELECT id, username, email, role, created_at FROM users WHERE id = :id");
+            $stmt = $this->connection->prepare("SELECT id, company_id, username, email, role, created_at FROM users WHERE id = :id");
             $stmt->bindParam(":id", $id, PDO::PARAM_INT);
             $stmt->execute();
 

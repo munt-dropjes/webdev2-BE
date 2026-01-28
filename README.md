@@ -54,8 +54,9 @@ docker-compose up -d --build
 
 The database will automatically initialize using the script in `sql/setup.sql` on the first run.
 
-* **Default Admin User:** `StockMaster` / `password123`
-* **Default Companies:** Haviken, Spechten, Sperwers, Zwaluwen, Valken
+* **Default Admin User:** `StockMaster`
+* **Default Companies:** `Haviken`, `Spechten`, `Sperwers`, `Zwaluwen` & `Valken`
+* **Default Password for all users:** `password123`
 
 ---
 

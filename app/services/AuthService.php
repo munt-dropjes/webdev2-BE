@@ -6,6 +6,7 @@ use Firebase\JWT\Key;
 use Config\JwtConfig;
 use Exception;
 use http\Exception\BadMessageException;
+use JetBrains\PhpStorm\NoReturn;
 use Models\DTO\UserLoginRequest;
 use Models\User;
 use Repositories\UserRepository;
@@ -35,7 +36,6 @@ class AuthService {
         } catch (Exception $e) {
             $this->abort(401, 'Invalid Token: ' . $e->getMessage());
         }
-        return (object)[];
     }
 
     /**
@@ -63,6 +63,7 @@ class AuthService {
         }
     }
 
+    #[NoReturn]
     private function abort(int $code, string $message): void {
         http_response_code($code);
         echo json_encode(['error' => $message]);
