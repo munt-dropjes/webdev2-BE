@@ -11,8 +11,23 @@ DROP TABLE IF EXISTS `task_categories`;
 DROP TABLE IF EXISTS `companies_history`;
 DROP TABLE IF EXISTS `transactions`;
 DROP TABLE IF EXISTS `shares`;
-DROP TABLE IF EXISTS `companies`;
 DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `companies`;
+
+-- --------------------------------------------------------
+-- 2. Create Companies Table (MUST BE FIRST)
+-- Matches app/models/Company.php
+-- --------------------------------------------------------
+CREATE TABLE `companies`
+(
+    `id`         int(11) NOT NULL AUTO_INCREMENT,
+    `name`       varchar(50) NOT NULL,
+    `color`      varchar(7)  NOT NULL,
+    `cash`       bigint(20) DEFAULT 100000,
+    `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 -- 2. Create Users Table
@@ -31,21 +46,6 @@ CREATE TABLE `users`
     UNIQUE KEY `email` (`email`),
     UNIQUE KEY `username` (`username`),
     CONSTRAINT `fk_user_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
--- 3. Create Companies Table
--- Matches app/models/Company.php
--- --------------------------------------------------------
-CREATE TABLE `companies`
-(
-    `id`         int(11) NOT NULL AUTO_INCREMENT,
-    `name`       varchar(50) NOT NULL,
-    `color`      varchar(7)  NOT NULL,
-    `cash`       bigint(20) DEFAULT 100000,
-    `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -96,7 +96,7 @@ CREATE TABLE `companies_history`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
--- 7. NEW: Task Categories Table (With P3, P4, P5)
+-- 7. Task Categories Table
 -- --------------------------------------------------------
 CREATE TABLE `task_categories`
 (
@@ -113,7 +113,7 @@ CREATE TABLE `task_categories`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
--- 8. NEW: Tasks Table
+-- 8. Tasks Table
 -- --------------------------------------------------------
 CREATE TABLE `tasks`
 (
@@ -125,7 +125,7 @@ CREATE TABLE `tasks`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
--- 9. NEW: Task Completions Table
+-- 9. Task Completions Table
 -- --------------------------------------------------------
 CREATE TABLE `task_completions`
 (
@@ -140,7 +140,17 @@ CREATE TABLE `task_completions`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
--- 10. Seed Users
+-- 10. Seed Companies
+-- --------------------------------------------------------
+INSERT INTO `companies` (`name`, `color`, `cash`)
+VALUES ('Haviken', '#ff69b4', 100000),
+       ('Spechten', '#198754', 100000),
+       ('Sperwers', '#ffc107', 100000),
+       ('Zwaluwen', '#0d6efd', 100000),
+       ('Valken', '#fd7e14', 100000);
+
+-- --------------------------------------------------------
+-- 11. Seed Users (Depends on Companies)
 -- --------------------------------------------------------
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `created_at`)
 VALUES (1, 'StockMaster', 'admin@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'admin',
@@ -152,16 +162,6 @@ VALUES  (1, 'Haviken', 'haviken@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.H
         (3, 'Sperwers', 'sperwers@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'user'),
         (4, 'Zwaluwen', 'zwaluwen@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'user'),
         (5, 'Valken', 'valken@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'user');
-
--- --------------------------------------------------------
--- 11. Seed Companies
--- --------------------------------------------------------
-INSERT INTO `companies` (`name`, `color`, `cash`)
-VALUES ('Haviken', '#ff69b4', 100000),
-       ('Spechten', '#198754', 100000),
-       ('Sperwers', '#ffc107', 100000),
-       ('Zwaluwen', '#0d6efd', 100000),
-       ('Valken', '#fd7e14', 100000);
 
 -- --------------------------------------------------------
 -- 12. Seed Shares
@@ -196,7 +196,6 @@ VALUES ('3e Klasse', 25000, 12500, 5000, -12500, -25000),
 -- --------------------------------------------------------
 -- 14. Seed Tasks
 -- --------------------------------------------------------
-
 -- 3e Klasse
 INSERT INTO `tasks` (`category_id`, `name`)
     SELECT id, 'Kruissjorring' FROM task_categories WHERE label = '3e Klasse' UNION ALL
@@ -227,7 +226,7 @@ INSERT INTO `tasks` (`category_id`, `name`)
     SELECT id, '3 op 1 bouwen' FROM task_categories WHERE label = '1e Klasse' UNION ALL
     SELECT id, 'EHBO' FROM task_categories WHERE label = '1e Klasse';
 
--- Algemeen/Overige (Selection)
+-- Algemeen/Overige
 INSERT INTO `tasks` (`category_id`, `name`)
     SELECT id, 'Kaartenhuis 6 verdiepingen' FROM task_categories WHERE label = 'Algemeen/Overige' UNION ALL
     SELECT id, 'Kruiwagen hout halen' FROM task_categories WHERE label = 'Algemeen/Overige' UNION ALL
@@ -262,7 +261,7 @@ INSERT INTO `tasks` (`category_id`, `name`)
     SELECT id, 'Brug zonder touw' FROM task_categories WHERE label = 'Algemeen/Overige' UNION ALL
     SELECT id, 'Plattegrond terrein' FROM task_categories WHERE label = 'Algemeen/Overige';
 
--- Vragen (Selection)
+-- Vragen
 INSERT INTO `tasks` (`category_id`, `name`)
     SELECT id, 'Naam Groep 3 (1911)' FROM task_categories WHERE label = 'Vragen' UNION ALL
     SELECT id, 'Hopman Grijze Driehoek' FROM task_categories WHERE label = 'Vragen' UNION ALL
