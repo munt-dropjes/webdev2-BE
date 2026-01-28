@@ -75,11 +75,11 @@ class StockRepository extends Repository {
             // 4. Log Transaction
             $sellerName = $req->seller_id ? "Company " . $req->seller_id : "The Bank";
             $this->connection->prepare("INSERT INTO transactions (company_id, amount, description) VALUES (?, ?, ?)")
-                ->execute([$req->buyer_id, -$totalCost, "Bought {$req->amount} shares of Company {$req->stock_company_id} from $sellerName"]);
+                ->execute([$req->buyer_id, -$totalCost, "Bought {$req->amount} shares of Company {$req->stock_company_name} from $sellerName"]);
 
             if ($req->seller_id !== null) {
                 $this->connection->prepare("INSERT INTO transactions (company_id, amount, description) VALUES (?, ?, ?)")
-                    ->execute([$req->seller_id, $totalCost, "Sold {$req->amount} shares of Company {$req->stock_company_id} to Company {$req->buyer_id}"]);
+                    ->execute([$req->seller_id, $totalCost, "Sold {$req->amount} shares of Company {$req->stock_company_name} to Company {$req->buyer_name}"]);
             }
 
             $this->connection->commit();

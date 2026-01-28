@@ -39,9 +39,11 @@ class StockService
 
         $stockCompany = $this->companyService->getById($request->stock_company_id);
         if (!$stockCompany) throw new Exception("Stock company not found", 404);
+        $request->stock_company_name = $stockCompany->name;
 
         $buyer = $this->companyService->getById($request->buyer_id);
         if (!$buyer) throw new Exception("Buyer not found", 404);
+        $request->buyer_name = $buyer->name;
 
         if ($request->seller_id !== null) {
             $seller = $this->companyService->getById($request->seller_id);
