@@ -46,20 +46,30 @@ class TaskService
             throw new Exception("Company not found", 404);
         }
 
-        if ($this->taskRepo->hasCompleted($request)) {
-            throw new Exception("Task already completed by this company", 400);
+        if ($this->taskRepo->hasAttempted($request)) {
+            throw new Exception("Task already attempted by this company", 400);
         }
 
-        $existingCompletions = $this->taskRepo->countCompletions($request->task_id);
+        // --- FAILURE PATH ---
+        if ($request->success === false) {
+            $penalty = $task->penalty;
+            $amount = -abs($penalty); // Ensure negative
 
-        $reward = $this->getRewardAmount($task, $existingCompletions);
-        $rankLabel = $this->getRankLabel($existingCompletions);
+            $description = "Penalty of ƒ {$amount} for incorrect task submission: {$task->category} - {$task->name}";
+            $this->taskRepo->completeTask($request, $amount, $description);
+
+            return TaskResponse::CreateFromCompletion($company, $task, $amount, false);
+        }
+
+        // --- SUCCESS PATH ---
+        $successfulCompletions = $this->taskRepo->countSuccessfulCompletions($request->task_id);
+        $reward = $this->getRewardAmount($task, $successfulCompletions);
+        $rankLabel = $this->getRankLabel($successfulCompletions);
 
         $description = "Company {$company->name} got ƒ $reward for being the $rankLabel to complete task {$task->category} - {$task->name}";
-
         $this->taskRepo->completeTask($request, $reward, $description);
 
-        return TaskResponse::CreateFromCompletion($company, $task, $reward);
+        return TaskResponse::CreateFromCompletion($company, $task, $reward, true);
     }
 
     private function getRankLabel(int $rank): string {

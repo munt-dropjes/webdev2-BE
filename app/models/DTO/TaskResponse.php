@@ -12,9 +12,10 @@ class TaskResponse
     public int $task_id;
     public string $task_name;
     public int $reward;
+    public bool $success;
     public string $completed_at;
 
-    public static function CreateFromCompletion(Company $company, Task $task, int $reward): TaskResponse
+    public static function CreateFromCompletion(Company $company, Task $task, int $reward, bool $success): TaskResponse
     {
         $response = new TaskResponse();
         $response->company_id = $company->id;
@@ -22,6 +23,7 @@ class TaskResponse
         $response->task_id = $task->id;
         $response->task_name = "$task->name - $task->category";
         $response->reward = $reward;
+        $response->success = $success;
         $response->completed_at = date('Y-m-d H:i:s');
         return $response;
     }

@@ -18,7 +18,7 @@ class TaskController extends Controller
         try {
             $this->respond($this->taskService->getAllTasks());
         } catch (Exception $e) {
-            $this->respondWithError($e->getMessage(), $e->getCode());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 
@@ -26,14 +26,14 @@ class TaskController extends Controller
         try {
             $request = $this->requestObjectFromPostedJson(TaskCompleteRequest::class);
 
-            if (!isset($request->company_id) || !isset($request->task_id)) {
+            if (!isset($request->company_id) || !isset($request->task_id) || !isset($request->success)) {
                 $this->respondWithError(400, "Missing required fields");
             }
 
             $response = $this->taskService->completeTask($request);
             $this->respond($response);
         } catch (Exception $e) {
-            $this->respondWithError($e->getMessage(), $e->getCode());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 }

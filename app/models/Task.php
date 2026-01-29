@@ -12,9 +12,11 @@ class Task
     public int $reward_p3;
     public int $reward_p4;
     public int $reward_p5;
+    public int $penalty;
 
     // Structure: [['company_id' => 1, 'company_name' => 'Haviken', 'completed_at' => '...']]
     public array $finished_by = [];
+    public array $failed_by = [];
 
     public static function fromModel(Task $task): self{
         $response = new self();
@@ -27,6 +29,7 @@ class Task
         $response->reward_p4 = $task->reward_p4;
         $response->reward_p5 = $task->reward_p5;
         $response->finished_by = $task->finished_by;
+        $response->failed_by = $task->failed_by;
         return $response;
     }
 }

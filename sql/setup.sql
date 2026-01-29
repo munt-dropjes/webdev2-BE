@@ -102,8 +102,8 @@ CREATE TABLE `task_categories`
 (
     `id`        int(11) NOT NULL AUTO_INCREMENT,
     `label`     varchar(100) NOT NULL,
-    `reward_p1` int(11) NOT NULL,
-    `reward_p2` int(11) NOT NULL,
+    `reward_p1` int(11) NOT NULL DEFAULT 0,
+    `reward_p2` int(11) NOT NULL DEFAULT 0,
     `reward_p3` int(11) NOT NULL DEFAULT 0,
     `reward_p4` int(11) NOT NULL DEFAULT 0,
     `reward_p5` int(11) NOT NULL DEFAULT 0,
@@ -132,6 +132,7 @@ CREATE TABLE `task_completions`
     `id`           int(11) NOT NULL AUTO_INCREMENT,
     `task_id`      int(11) NOT NULL,
     `company_id`   int(11) NOT NULL,
+    `success`      tinyint(1) NOT NULL DEFAULT 1,
     `completed_at` timestamp DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `unique_completion` (`task_id`, `company_id`),
@@ -186,12 +187,12 @@ FROM `companies`;
 -- --------------------------------------------------------
 -- 13. Seed Task Categories
 -- --------------------------------------------------------
-INSERT INTO `task_categories` (`label`, `reward_p1`, `reward_p2`, `reward_p3`, `reward_p4`, `reward_p5`)
-VALUES ('3e Klasse', 25000, 12500, 5000, -12500, -25000),
-       ('2e Klasse', 50000, 25000, 10000, -25000, -50000),
-       ('1e Klasse', 100000, 50000, 20000, -50000, -100000),
-       ('Algemeen/Overige', 50000, 25000, 10000, -25000, -50000),
-       ('Vragen', 5000, 2500, 1000, -2500, -5000);
+INSERT INTO `task_categories` (`label`, `reward_p1`, `reward_p2`, `reward_p3`, `reward_p4`, `reward_p5`, `penalty`)
+VALUES ('3e Klasse', 25000, 12500, 5000, -12500, -25000, -25000),
+       ('2e Klasse', 50000, 25000, 10000, -25000, -50000, -50000),
+       ('1e Klasse', 100000, 50000, 20000, -50000, -100000, -100000),
+       ('Algemeen/Overige', 50000, 25000, 10000, -25000, -50000, -50000),
+       ('Vragen', 5000, 2500, 1000, -2500, -5000, -5000);
 
 -- --------------------------------------------------------
 -- 14. Seed Tasks

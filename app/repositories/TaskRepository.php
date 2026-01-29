@@ -19,8 +19,10 @@ class TaskRepository extends Repository
                     cat.reward_p3,
                     cat.reward_p4,
                     cat.reward_p5,
+                    cat.penalty,
                     tc.company_id,
                     tc.completed_at,
+                    tc.success,
                     co.name as company_name
                 FROM tasks t
                 JOIN task_categories cat ON t.category_id = cat.id
@@ -47,24 +49,33 @@ class TaskRepository extends Repository
                 $task->reward_p3 = $row['reward_p3'];
                 $task->reward_p4 = $row['reward_p4'];
                 $task->reward_p5 = $row['reward_p5'];
+                $task->penalty = $row['penalty'];
                 $task->finished_by = [];
+                $task->failed_by = [];
 
                 $tasks[$taskId] = $task;
             }
 
             if ($row['company_id']) {
-                $tasks[$taskId]->finished_by[] = [
+                $entry = [
                     'company_id' => (int)$row['company_id'],
                     'company_name' => $row['company_name'],
                     'completed_at' => $row['completed_at']
                 ];
+
+                // Split Logic: Success vs Fail
+                if ($row['success'] == 1) {
+                    $tasks[$taskId]->finished_by[] = $entry;
+                } else {
+                    $tasks[$taskId]->failed_by[] = $entry;
+                }
             }
         }
         return array_values($tasks);
     }
 
     public function getById(int $id): ?Task {
-        $sql = "SELECT t.id, t.name, cat.label as category, cat.reward_p1, cat.reward_p2, cat.reward_p3, cat.reward_p4, cat.reward_p5
+        $sql = "SELECT t.id, t.name, cat.label as category, cat.reward_p1, cat.reward_p2, cat.reward_p3, cat.reward_p4, cat.reward_p5, cat.penalty
                 FROM tasks t 
                 JOIN task_categories cat ON t.category_id = cat.id 
                 WHERE t.id = :id";
@@ -75,13 +86,13 @@ class TaskRepository extends Repository
         return $stmt->fetch() ?: null;
     }
 
-    public function countCompletions(int $taskId): int {
-        $stmt = $this->connection->prepare("SELECT COUNT(*) FROM task_completions WHERE task_id = ?");
+    public function countSuccessfulCompletions(int $taskId): int {
+        $stmt = $this->connection->prepare("SELECT COUNT(*) FROM task_completions WHERE task_id = ? AND success = 1");
         $stmt->execute([$taskId]);
         return (int) $stmt->fetchColumn();
     }
 
-    public function hasCompleted(TaskCompleteRequest $request): bool {
+    public function hasAttempted(TaskCompleteRequest $request): bool {
         $stmt = $this->connection->prepare("SELECT id FROM task_completions WHERE task_id = ? AND company_id = ?");
         $stmt->execute([$request->task_id, $request->company_id]);
         return (bool) $stmt->fetch();
@@ -94,8 +105,10 @@ class TaskRepository extends Repository
         try {
             $this->connection->beginTransaction();
 
-            $this->connection->prepare("INSERT INTO task_completions (task_id, company_id) VALUES (?, ?)")
-                ->execute([$request->task_id, $request->company_id]);
+            $isSuccess = $request->success ? 1 : 0;
+
+            $this->connection->prepare("INSERT INTO task_completions (task_id, company_id, success) VALUES (?, ?, ?)")
+                ->execute([$request->task_id, $request->company_id, $isSuccess]);
 
             $this->connection->prepare("UPDATE companies SET cash = cash + ? WHERE id = ?")
                 ->execute([$amount, $request->company_id]);
