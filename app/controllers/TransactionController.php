@@ -36,7 +36,7 @@ class TransactionController extends Controller
         try {
             $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
             $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
-            $user = $this->createUserFromTokenPayload($this->authService->validateToken());
+            $user = $this->authService->getCurrentUserFromTokenPayload();
 
             $transactionManyRequest = TransactionManyRequest::Create($limit, $offset, $user);
 
@@ -46,18 +46,5 @@ class TransactionController extends Controller
         } catch (Exception $e) {
             $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
-    }
-
-    private function createUserFromTokenPayload($payload): User
-    {
-        $jwtData = $payload->data;
-
-        $user = new User();
-        $user->id = $jwtData->id;
-        $user->username = $jwtData->username;
-        $user->role = $jwtData->role;
-        // Handle nullable company_id safely
-        $user->company_id = isset($jwtData->company_id) ? (int)$jwtData->company_id : null;
-        return $user;
     }
 }

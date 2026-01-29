@@ -2,30 +2,34 @@
 namespace Controllers;
 
 use Exception;
+use Services\AuthService;
 use Services\CompanyService;
 
 class CompanyController extends Controller{
     private CompanyService $companyService;
+    private AuthService $authService;
 
     function __construct()
     {
         $this->companyService = new CompanyService();
+        $this->authService = new AuthService();
     }
 
     public function getAll()
     {
         try {
-            $companies = $this->companyService->getAllCompanies();
+            $user = $this->authService->getCurrentUserFromTokenPayload();
+            $companies = $this->companyService->getAllCompanies($user);
             $this->respond($companies);
         } catch (Exception $e) {
             $this->respondWithError(500, $e->getMessage());
         }
-
     }
 
     public function getById($id){
         try {
-            $company = $this->companyService->getById((int)$id);
+            $user = $this->authService->getCurrentUserFromTokenPayload();
+            $company = $this->companyService->getById((int)$id, $user);
             if (!$company) {
                 $this->respondWithError(404, "Company not found");
             }

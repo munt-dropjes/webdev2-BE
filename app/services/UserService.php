@@ -5,7 +5,6 @@ use Models\DTO\UserCreateRequest;
 use Models\DTO\UserManyRequest;
 use Models\DTO\UserResponse;
 use Models\DTO\UserUpdateRequest;
-use models\User;
 use Repositories\UserRepository;
 use Exception;
 

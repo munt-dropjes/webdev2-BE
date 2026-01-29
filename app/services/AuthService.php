@@ -5,7 +5,6 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Config\JwtConfig;
 use Exception;
-use http\Exception\BadMessageException;
 use JetBrains\PhpStorm\NoReturn;
 use Models\DTO\UserLoginRequest;
 use Models\User;
@@ -61,6 +60,20 @@ class AuthService {
         } catch (Exception $e) {
             throw new Exception('Internal server error: ' . $e->getMessage(), 500);
         }
+    }
+
+    public function getCurrentUserFromTokenPayload(): User
+    {
+        $payload = $this->validateToken();
+        $jwtData = $payload->data;
+
+        $user = new User();
+        $user->id = $jwtData->id;
+        $user->username = $jwtData->username;
+        $user->role = $jwtData->role;
+        // Handle nullable company_id safely
+        $user->company_id = isset($jwtData->company_id) ? (int)$jwtData->company_id : null;
+        return $user;
     }
 
     #[NoReturn]

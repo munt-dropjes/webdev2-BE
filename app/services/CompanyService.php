@@ -4,6 +4,8 @@ namespace Services;
 
 use Exception;
 use Models\Company;
+use Models\DTO\CompanyResponse;
+use Models\User;
 use Repositories\CompanyRepository;
 use Repositories\HistoryRepository;
 use Repositories\StockRepository;
@@ -18,64 +20,101 @@ class CompanyService
         $this->stockRepo = new StockRepository();
     }
     /**
-     * @return Company[]
+     * @return CompanyResponse[]
      * @throws Exception
      */
-    public function getAllCompanies(): array {
+    public function getAllCompanies(User $currentUser): array {
         $companies = $this->companyRepo->findAll();
         $shares = $this->stockRepo->getAllActiveShares();
 
-        return $this->calculateValuations($companies, $shares);
+        $valuatedCompanies = $this->calculateValuations($companies, $shares);
+
+        $response =[];
+        foreach ($valuatedCompanies as $company) {
+            $response[] = $this->createResponse($company, $currentUser);
+        }
+        return $response;
     }
 
     /**
      * @throws Exception
      */
-    public function getById(int $id): ?Company {
+    public function getById(int $id, User $currentUser): ?CompanyResponse {
         $company = $this->companyRepo->findById($id);
         if (!$company) return null;
 
         $allCompanies = $this->companyRepo->findAll();
         $shares = $this->stockRepo->getAllActiveShares();
 
-        $enrichedAll = $this->calculateValuations($allCompanies, $shares);
+        $valuatedCompanies = $this->calculateValuations($allCompanies, $shares);
 
-        foreach ($enrichedAll as $c) {
-            if ($c->id === $id) return $c;
+        foreach ($valuatedCompanies as $c) {
+            if ($c->id === $id) {
+                $company = $c;
+                break;
+            }
         }
-        return $company;
+        return $this->createResponse($company, $currentUser);
     }
 
     private function calculateValuations(array $companies, array $shares): array {
-        $cashMap = [];
+        // 1. Initialize Map of Companies valuation based on Cash
+        $companyMap = [];
         foreach ($companies as $c) {
-            $cashMap[$c->id] = $c->cash;
+            $c->net_worth = $c->cash;
+            $c->stock_price = 0;
+            $companyMap[$c->id] = $c;
         }
 
-        foreach ($companies as $company) {
-            $portfolioValue = 0;
+        // 2. Map Shares by Owner Company
+        $portfolios = [];
+        foreach ($shares as $share) {
+            $ownerId = $share['owner_id'];
+            if (!isset($portfolios[$ownerId])) $portfolios[$ownerId] = [];
+            $portfolios[$ownerId][] = $share;
+        }
 
-            foreach ($shares as $share) {
-                // If this company owns the share
-                if ($share['owner_id'] == $company->id) {
-                    $targetId = $share['company_id'];
-                    $amount = $share['amount'];
+        // 3. THE LOOP - Iteratively calculate Net Worth 5 times to stabilize valuations
+        // This allows for indirect ownership effects to propagate
+        for ($i = 0; $i < 5; $i++) {
+            foreach ($companyMap as $id => $company) {
+                $portfolioValue = 0;
 
-                    // LOGIC: Intrinsic Value = Target Cash / 100
-                    $targetCash = $cashMap[$targetId] ?? 0;
-                    $targetBasePrice = max(1, floor($targetCash / 100));
+                if (isset($portfolios[$id])) {
+                    foreach ($portfolios[$id] as $share) {
+                        $targetId = $share['company_id'];
+                        $amount = $share['amount'];
 
-                    $portfolioValue += ($amount * $targetBasePrice);
+                        // Use the Net Worth calculated in the previous loop pass
+                        $targetNetWorth = $companyMap[$targetId]->net_worth ?? 0;
+
+                        // Price = Net Worth / 100
+                        $targetPrice = max(1, floor($targetNetWorth / 100));
+
+                        $portfolioValue += ($amount * $targetPrice);
+                    }
                 }
+
+                // Update for the next pass
+                $company->net_worth = $company->cash + $portfolioValue;
             }
+        }
 
-            // LOGIC: Net Worth = Cash + Portfolio
-            $company->net_worth = $company->cash + $portfolioValue;
-
-            // LOGIC: Stock Price = Net Worth / 100
+        // 4. Final Price Calculation
+        foreach ($companyMap as $company) {
             $company->stock_price = max(1, floor($company->net_worth / 100));
         }
 
-        return $companies;
+        return array_values($companyMap);
+    }
+
+    private function createResponse($company, User $currentUser): CompanyResponse {
+        $isAdmin = ($currentUser->role === 'admin');
+        $isOwnCompany = (isset($currentUser->company_id) && $currentUser->company_id === $company->id);
+
+        // Logic: Admin or Owner sees Cash. Everyone else sees null.
+        $showCash = $isAdmin || $isOwnCompany;
+
+        return CompanyResponse::CreateFromCompany($company, $showCash);
     }
 }
