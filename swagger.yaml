@@ -1,15 +1,12 @@
 openapi: 3.0.3
 info:
-  title: Game Economy API
+  title: Stock Market Game API
   description: Backend API for Companies, Stocks, Tasks & Trading.
-  version: 1.3.0
+  version: 1.4.0
 servers:
   - url: http://localhost
     description: Local Development Server
 
-# ----------------------------------------------------------------
-# SECURITY SCHEMES
-# ----------------------------------------------------------------
 components:
   securitySchemes:
     bearerAuth:
@@ -17,442 +14,626 @@ components:
       scheme: bearer
       bearerFormat: JWT
 
-  # ----------------------------------------------------------------
-  # SCHEMAS (DATA MODELS)
-  # ----------------------------------------------------------------
   schemas:
-    # --- Auth & System ---
-    LoginRequest:
+    # --- Auth DTOs ---
+    UserLoginRequest:
       type: object
-      required: [username, password]
+      required:
+        - username
+        - password
       properties:
-        username: { type: string, example: "StockMaster" }
-        password: { type: string, format: password, example: "secret123" }
+        username:
+          type: string
+          example: "Haviken"
+        password:
+          type: string
+          example: "secret123"
 
     LoginResponse:
       type: object
       properties:
-        message: { type: string }
-        token: { type: string }
-        user: { $ref: '#/components/schemas/UserResponse' }
-        expireAt: { type: string }
+        message:
+          type: string
+          example: "Login successful"
+        token:
+          type: string
+          description: JWT Bearer token
+        user:
+          $ref: '#/components/schemas/UserResponse'
+        expireAt:
+          type: string
+          example: "29-01-2026 14:00:00"
 
-    ErrorResponse:
-      type: object
-      properties:
-        errorMessage: { type: string }
-        code: { type: integer }
-
-    # --- Users ---
-    UserResponse:
-      type: object
-      properties:
-        id: { type: integer }
-        username: { type: string }
-        email: { type: string, format: email }
-        role: { type: string, enum: [admin, user] }
-        createdAt: { type: string, format: date-time }
-
+    # --- User DTOs ---
     UserCreateRequest:
       type: object
-      required: [username, email, password]
+      required:
+        - email
+        - username
+        - password
       properties:
-        username: { type: string }
-        email: { type: string }
-        password: { type: string }
-        role: { type: string, default: "user" }
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+          default: user
 
     UserUpdateRequest:
       type: object
       properties:
-        username: { type: string }
-        email: { type: string }
-        password: { type: string }
-        role: { type: string }
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
 
-    # --- Companies ---
-    Company:
+    UserResponse:
       type: object
       properties:
-        id: { type: integer }
-        name: { type: string }
-        color: { type: string }
-        cash: { type: integer }
-        net_worth: { type: integer, description: "Calculated: Cash + Portfolio Value" }
-        stock_price: { type: integer, description: "Calculated: Net Worth / 100" }
-        created_at: { type: string, format: date-time }
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
 
-    # --- Tasks ---
+    # --- Company DTOs ---
+    CompanyResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+        cash:
+          type: integer
+          nullable: true
+          description: Null if user is not Admin or Owner.
+        net_worth:
+          type: integer
+        stock_price:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    # --- Task DTOs ---
     Task:
       type: object
-      description: "Full Task details including completion history"
       properties:
-        id: { type: integer }
-        category: { type: string, example: "3e Klasse" }
-        name: { type: string, example: "Kruissjorring" }
-        reward_p1: { type: integer }
-        reward_p2: { type: integer }
-        reward_p3: { type: integer }
-        reward_p4: { type: integer }
-        reward_p5: { type: integer }
+        id:
+          type: integer
+        category:
+          type: string
+        name:
+          type: string
+        reward_p1:
+          type: integer
+        reward_p2:
+          type: integer
+        reward_p3:
+          type: integer
+        reward_p4:
+          type: integer
+        reward_p5:
+          type: integer
         finished_by:
           type: array
           items:
             type: object
             properties:
-              company_id: { type: integer }
-              company_name: { type: string }
-              completed_at: { type: string, format: date-time }
-              rank: { type: integer }
+              company_id:
+                type: integer
+              company_name:
+                type: string
+              completed_at:
+                type: string
+                format: date-time
+              rank:
+                type: integer
 
     TaskCompleteRequest:
       type: object
-      required: [company_id, task_id]
+      required:
+        - company_id
+        - task_id
       properties:
-        company_id: { type: integer }
-        task_id: { type: integer }
+        company_id:
+          type: integer
+        task_id:
+          type: integer
 
-    TaskCompletionResponse:
-      type: object
-      description: "Response after successfully completing a task"
-      properties:
-        company_id: { type: integer }
-        company_name: { type: string }
-        task_id: { type: integer }
-        task_name: { type: string }
-        reward: { type: integer }
-        completed_at: { type: string, format: date-time }
-
-    # --- History ---
-    HistoryPoint:
+    TaskResponse:
       type: object
       properties:
-        company_id: { type: integer }
-        name: { type: string }
-        net_worth: { type: integer }
-        stock_price: { type: integer }
-        recorded_at: { type: string, format: date-time }
+        company_id:
+          type: integer
+        company_name:
+          type: string
+        task_id:
+          type: integer
+        task_name:
+          type: string
+        reward:
+          type: integer
+        completed_at:
+          type: string
+          format: date-time
 
-    # --- Stocks ---
-    Share:
-      type: object
-      properties:
-        company_id: { type: integer }
-        company_name: { type: string }
-        owner_id: { type: integer, nullable: true }
-        owner_name: { type: string, nullable: true }
-        amount: { type: integer }
-        current_price: { type: integer }
-
-    TradeStockRequest:
-      type: object
-      required: [buyer_id, stock_company_id, amount]
-      properties:
-        buyer_id: { type: integer }
-        seller_id: { type: integer, nullable: true, description: "Null if buying from Bank" }
-        stock_company_id: { type: integer }
-        amount: { type: integer, minimum: 1 }
-
-    # --- Transactions ---
+    # --- Transaction DTOs ---
     TransactionCreateRequest:
       type: object
-      required: [company_id, amount, description]
+      required:
+        - company_id
+        - amount
+        - description
       properties:
-        company_id: { type: integer }
-        amount: { type: integer }
-        description: { type: string }
+        company_id:
+          type: integer
+        amount:
+          type: integer
+          description: Can be negative for costs.
+        description:
+          type: string
 
     Transaction:
       type: object
       properties:
-        id: { type: integer }
-        company_id: { type: integer }
-        amount: { type: integer }
-        description: { type: string }
-        created_at: { type: string, format: date-time }
+        id:
+          type: integer
+        company_id:
+          type: integer
+        amount:
+          type: integer
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
 
-# ----------------------------------------------------------------
-# ENDPOINTS
-# ----------------------------------------------------------------
+    # --- Stock DTOs ---
+    Stock:
+      type: object
+      properties:
+        company_id:
+          type: integer
+        company_name:
+          type: string
+        owner_id:
+          type: integer
+          nullable: true
+        owner_name:
+          type: string
+          nullable: true
+        amount:
+          type: integer
+        current_price:
+          type: integer
+
+    StockTradeRequest:
+      type: object
+      required:
+        - buyer_id
+        - stock_company_id
+        - amount
+      properties:
+        buyer_id:
+          type: integer
+        seller_id:
+          type: integer
+          nullable: true
+          description: Optional. If null, trade is with the Bank.
+        stock_company_id:
+          type: integer
+        amount:
+          type: integer
+
+    # --- Shared Errors ---
+    ErrorResponse:
+      type: object
+      properties:
+        errorMessage:
+          type: string
+
 paths:
-  # --- Public ---
+  # --- Public Routes ---
   /login:
     post:
-      summary: User Login
-      tags: [ Auth ]
+      summary: Login
+      tags: [Auth]
       requestBody:
+        required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/LoginRequest' }
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
       responses:
         200:
-          description: "Successful login"
+          description: Successful login
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/LoginResponse' }
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        401:
+          description: Invalid credentials
 
   /ping:
     get:
       summary: Health Check
-      tags: [ System ]
+      tags: [System]
       responses:
-        200: { description: "OK" }
+        200:
+          description: OK
 
   /diagnostics:
     get:
       summary: System Diagnostics
-      tags: [ System ]
+      tags: [System]
       responses:
-        200: { description: "OK" }
+        200:
+          description: Server info
 
-  # --- Protected ---
-  # USERS
-  /api/users:
-    get:
-      summary: Get All Users
-      tags: [ Users ]
-      security: [ { bearerAuth: [ ] } ]
-      responses:
-        200:
-          description: "Get list of users"
-          content:
-            application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/UserResponse' } }
-    post:
-      summary: Create User
-      tags: [ Users ]
-      security: [ { bearerAuth: [ ] } ]
-      requestBody:
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/UserCreateRequest' }
-      responses:
-        200:
-          description: "Created user"
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/UserResponse' }
-
-  /api/users/{id}:
-    get:
-      summary: Get User by ID
-      tags: [ Users ]
-      security: [ { bearerAuth: [ ] } ]
-      parameters:
-        - { in: path, name: id, required: true, schema: { type: integer } }
-      responses:
-        200:
-          description: "Get user details by ID"
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/UserResponse' }
-    put:
-      summary: Update User
-      tags: [ Users ]
-      security: [ { bearerAuth: [ ] } ]
-      parameters:
-        - { in: path, name: id, required: true, schema: { type: integer } }
-      requestBody:
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/UserUpdateRequest' }
-      responses:
-        200:
-          description: "Updated user details"
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/UserResponse' }
-    delete:
-      summary: Delete User
-      tags: [ Users ]
-      security: [ { bearerAuth: [ ] } ]
-      parameters:
-        - { in: path, name: id, required: true, schema: { type: integer } }
-      responses:
-        200: { description: User deleted }
-
-  # COMPANIES
+  # --- Protected Routes ---
   /api/companies:
     get:
-      summary: Get All Companies
-      tags: [ Companies ]
-      security: [ { bearerAuth: [ ] } ]
+      summary: Get all companies (with live valuations)
+      tags: [Companies]
+      security:
+        - bearerAuth: []
       responses:
         200:
-          description: Get list of companies
+          description: List of companies
           content:
             application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/Company' } }
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyResponse'
 
   /api/companies/{id}:
     get:
-      summary: Get Company Details
-      tags: [ Companies ]
-      security: [ { bearerAuth: [ ] } ]
+      summary: Get specific company details
+      tags: [Companies]
+      security:
+        - bearerAuth: []
       parameters:
-        - { in: path, name: id, required: true, schema: { type: integer } }
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
       responses:
         200:
-          description: Get company details by ID
+          description: Company details
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Company' }
+              schema:
+                $ref: '#/components/schemas/CompanyResponse'
+        404:
+          description: Company not found
 
-  # TASKS
   /api/tasks:
     get:
-      summary: Get All Tasks
-      description: Returns list of tasks with current completion status and rewards.
-      tags: [ Tasks ]
-      security: [ { bearerAuth: [ ] } ]
+      summary: Get all tasks and completions
+      tags: [Tasks]
+      security:
+        - bearerAuth: []
       responses:
         200:
-          description: Get list of tasks
+          description: List of tasks
           content:
             application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/Task' } }
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
 
   /api/tasks/complete:
     post:
-      summary: Complete a Task
-      description: Validates completion, calculates rank, assigns reward, and returns result.
-      tags: [ Tasks ]
-      security: [ { bearerAuth: [ ] } ]
+      summary: Complete a task for a company
+      tags: [Tasks]
+      security:
+        - bearerAuth: []
       requestBody:
+        required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/TaskCompleteRequest' }
+            schema:
+              $ref: '#/components/schemas/TaskCompleteRequest'
       responses:
         200:
           description: Task completed successfully
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/TaskCompletionResponse' }
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
         400:
-          description: Task already completed or invalid request
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/ErrorResponse' }
+          description: Task already completed or validation error
 
-  # HISTORY
-  /api/history/save:
-    post:
-      summary: Trigger Snapshot Save
-      description: "Triggered by frontend/cron. Checks if snapshot exists for current minute; if not, saves it."
-      tags: [ History ]
-      security: [ { bearerAuth: [ ] } ]
+  /api/transactions:
+    get:
+      summary: Get transaction history (scoped by role)
+      description: Admins see all, Users see their company's history.
+      tags: [Transactions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
       responses:
         200:
-          description: "Status object indicating saved or skipped"
+          description: List of transactions
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status: { type: string }
-                  message: { type: string }
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
 
-  /api/history/{dateTime}:
-    get:
-      summary: Get History Since
-      description: "Get historical valuation points since the provided datetime."
-      tags: [ History ]
-      security: [ { bearerAuth: [ ] } ]
-      parameters:
-        - in: path
-          name: dateTime
-          required: true
-          schema: { type: string, example: "2026-01-01 12:00:00" }
-          description: "URL encoded datetime string"
-      responses:
-        200:
-          description: "List of historical valuation points since the given datetime"
-          content:
-            application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/HistoryPoint' } }
-
-  # TRANSACTIONS
-  /api/transactions:
-    get:
-      summary: Get Transaction History
-      tags: [ Transactions ]
-      security: [ { bearerAuth: [ ] } ]
-      responses:
-        200:
-          description: "List of all transactions"
-          content:
-            application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/Transaction' } }
     post:
-      summary: Create Manual Transaction
-      tags: [ Transactions ]
-      security: [ { bearerAuth: [ ] } ]
-      requestBody:
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/TransactionCreateRequest' }
-      responses:
-        200: { description: Transaction processed }
-
-  # STOCKS
-  /api/stocks:
-    get:
-      summary: Get All Active Shares
-      description: "List of all shares owned by anyone (Companies or Bank)."
-      tags: [ Stocks ]
-      security: [ { bearerAuth: [ ] } ]
-      responses:
-        200:
-          description: "List of all active shares"
-          content:
-            application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/Share' } }
-
-  /api/stocks/bank:
-    get:
-      summary: Get Bank Portfolio
-      description: "Stocks held by the Bank (available for purchase)."
-      tags: [ Stocks ]
-      security: [ { bearerAuth: [ ] } ]
-      responses:
-        200:
-          description: "Bank stock portfolio"
-          content:
-            application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/Share' } }
-
-  /api/stocks/company/{companyId}:
-    get:
-      summary: Get Company Portfolio
-      description: "Stocks held by a specific company."
-      tags: [ Stocks ]
-      security: [ { bearerAuth: [ ] } ]
-      parameters:
-        - { in: path, name: companyId, required: true, schema: { type: integer } }
-      responses:
-        200:
-          description: "Company stock portfolio"
-          content:
-            application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/Share' } }
-
-  /api/stocks/trade:
-    post:
-      summary: Execute Stock Trade
-      description: "Buy/Sell stock. Use seller_id: null to buy from Bank."
-      tags: [ Stocks ]
-      security: [ { bearerAuth: [ ] } ]
+      summary: Create a manual transaction (Admin only usually)
+      tags: [Transactions]
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/TradeStockRequest' }
+            schema:
+              $ref: '#/components/schemas/TransactionCreateRequest'
       responses:
         200:
-          description: "Trade executed successfully"
+          description: Transaction processed
+        400:
+          description: Invalid amount or company
+
+  /api/stocks:
+    get:
+      summary: Get all share ownerships
+      tags: [Stocks]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stock'
+
+  /api/stocks/bank:
+    get:
+      summary: Get stocks owned by the Bank
+      tags: [Stocks]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stock'
+
+  /api/stocks/company/{companyId}:
+    get:
+      summary: Get stocks owned by a specific company
+      tags: [Stocks]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: companyId
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stock'
+
+  /api/stocks/trade:
+    post:
+      summary: Execute a stock trade
+      tags: [Stocks]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockTradeRequest'
+      responses:
+        200:
+          description: Trade successful
+        400:
+          description: Insufficient funds or stock
+
+  /api/history/save:
+    post:
+      summary: Trigger a manual snapshot of economy history
+      tags: [History]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Snapshot saved
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message: { type: string, example: "Trade executed successfully" }
+                  status:
+                    type: string
+                  message:
+                    type: string
+
+  /api/history/{dateTime}:
+    get:
+      summary: Get company valuation history since a specific date
+      tags: [History]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: dateTime
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: URL Encoded date string (Y-m-d H:i:s)
+      responses:
+        200:
+          description: History data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    company_id:
+                      type: integer
+                    name:
+                      type: string
+                    net_worth:
+                      type: integer
+                    stock_price:
+                      type: integer
+                    recorded_at:
+                      type: string
+
+  /api/users:
+    get:
+      summary: Get all users
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+        - in: query
+          name: role
+          schema:
+            type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+
+    post:
+      summary: Create a new user
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        200:
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+  /api/users/{id}:
+    get:
+      summary: Get user by ID
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+    put:
+      summary: Update user
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+    delete:
+      summary: Delete user
+      tags: [Users]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: User deleted

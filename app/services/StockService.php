@@ -31,22 +31,23 @@ class StockService
     /**
      * @throws Exception
      */
-    public function tradeStock(StockTradeRequest $request) {
+    public function tradeStock(StockTradeRequest $request): void
+    {
         if ($request->amount <= 0)
             throw new Exception("Amount must be greater than zero", 400);
         if ($request->buyer_id === $request->seller_id)
             throw new Exception("Buyer and seller cannot be the same", 400);
 
-        $stockCompany = $this->companyService->getById($request->stock_company_id);
+        $stockCompany = $this->companyService->getCompanyModelById($request->stock_company_id);
         if (!$stockCompany) throw new Exception("Stock company not found", 404);
         $request->stock_company_name = $stockCompany->name;
 
-        $buyer = $this->companyService->getById($request->buyer_id);
+        $buyer = $this->companyService->getCompanyModelById($request->buyer_id);
         if (!$buyer) throw new Exception("Buyer not found", 404);
         $request->buyer_name = $buyer->name;
 
         if ($request->seller_id !== null) {
-            $seller = $this->companyService->getById($request->seller_id);
+            $seller = $this->companyService->getCompanyModelById($request->seller_id);
             if (!$seller) throw new Exception("Seller not found", 404);
 
             $sellerStockAmount = $this->stockRepo->getShareAmount($request->stock_company_id, $request->seller_id);

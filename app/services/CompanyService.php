@@ -57,6 +57,27 @@ class CompanyService
         return $this->createResponse($company, $currentUser);
     }
 
+    /**
+     * @throws Exception
+     * INTERNAL / SERVICE Method: Returns the Raw Model (with calculated price)
+     *  Used by StockService to check funds and prices.
+     */
+    public function getCompanyModelById(int $id): ?Company {
+        $company = $this->companyRepo->findById($id);
+        if (!$company)
+            return null;
+
+        $allCompanies = $this->companyRepo->findAll();
+        $shares = $this->stockRepo->getAllActiveShares();
+        $valuatedCompanies = $this->calculateValuations($allCompanies, $shares);
+        foreach ($valuatedCompanies as $c) {
+            if ($c->id === $id) {
+                return $c;
+            }
+        }
+        return null;
+    }
+
     private function calculateValuations(array $companies, array $shares): array {
         // 1. Initialize Map of Companies valuation based on Cash
         $companyMap = [];
