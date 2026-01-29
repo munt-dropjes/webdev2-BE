@@ -39,6 +39,16 @@ class CompanyService
     /**
      * @throws Exception
      */
+    public function getAllCompanyModels(): array {
+        $companies = $this->companyRepo->findAll();
+        $shares = $this->stockRepo->getAllActiveShares();
+
+        return $this->calculateValuations($companies, $shares);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getById(int $id, User $currentUser): ?CompanyResponse {
         $company = $this->companyRepo->findById($id);
         if (!$company) return null;

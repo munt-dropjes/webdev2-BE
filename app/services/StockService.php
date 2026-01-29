@@ -16,12 +16,21 @@ class StockService
         $this->companyService = new CompanyService();
     }
 
+    /**
+     * @throws Exception
+     */
     public function getBankStocks(): array {
-        return $this->stockRepo->getPortfolio(null);
+        $portfolio = $this->stockRepo->getPortfolio(null);
+
+        return $this->applyRealValuation($portfolio);
     }
 
+    /**
+     * @throws Exception
+     */
     public function getCompanyStocks(int $companyId): array {
-        return $this->stockRepo->getPortfolio($companyId);
+        $portfolio = $this->stockRepo->getPortfolio($companyId);
+        return $this->applyRealValuation($portfolio);
     }
 
     public function getAllStocks(): array {
@@ -70,5 +79,26 @@ class StockService
         }
 
         $this->stockRepo->executeTrade($request, $totalCost);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function applyRealValuation(array $portfolio): array {
+        $calculatedCompanies = $this->companyService->getAllCompanyModels();
+
+        // Create a lookup map: [company_id => correct_price]
+        $priceMap = [];
+        foreach ($calculatedCompanies as $c) {
+            $priceMap[$c->id] = $c->stock_price;
+        }
+
+        foreach ($portfolio as $stock) {
+            if (isset($priceMap[$stock->company_id])) {
+                $stock->current_price = $priceMap[$stock->company_id];
+            }
+        }
+
+        return $portfolio;
     }
 }

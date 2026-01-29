@@ -28,7 +28,7 @@ class HistoryService
             ];
         }
 
-        $companies = $this->companyService->getAllCompanies();
+        $companies = $this->companyService->getAllCompanyModels();
         $this->historyRepo->saveHistoryFor($companies, $timestamp);
 
         return [
