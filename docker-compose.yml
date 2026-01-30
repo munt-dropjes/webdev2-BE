@@ -3,6 +3,8 @@ services:
     image: nginx:latest
     ports:
       - "80:80"
+    environment:
+      - TZ=Europe/Amsterdam
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./app:/app
@@ -11,6 +13,8 @@ services:
       context: .
       dockerfile: PHP.Dockerfile
     working_dir: /app
+    environment:
+      - TZ=Europe/Amsterdam
     volumes:
       - ./app:/app
   mysql:
@@ -21,6 +25,7 @@ services:
       MYSQL_USER: 'developer'
       MYSQL_PASSWORD: 'secret123'
       MYSQL_DATABASE: 'developmentdb'
+      TZ: Europe/Amsterdam
     volumes:
       - mysqldata:/var/lib/mysql
       - ./sql/setup.sql:/docker-entrypoint-initdb.d/init.sql
@@ -32,6 +37,7 @@ services:
       - "8080:80"
     environment:
       - PMA_HOST=mysql
+      - TZ=Europe/Amsterdam
     restart: unless-stopped
 volumes:
   mysqldata: {}
