@@ -88,54 +88,48 @@ class CompanyService
         return null;
     }
 
+    /**
+     * - Target Stock Price = Target Cash / 100
+     * - Portfolio Value = Amount * Target Stock Price
+     * - Net Worth = Own Cash + Portfolio Value
+     * - Own Stock Price = Net Worth / 100
+     */
     private function calculateValuations(array $companies, array $shares): array {
-        // 1. Initialize Map of Companies valuation based on Cash
+        // 1. Create a fast lookup for CASH only
+        $cashMap = [];
         $companyMap = [];
+
         foreach ($companies as $c) {
+            $cashMap[$c->id] = $c->cash;
             $c->net_worth = $c->cash;
             $c->stock_price = 0;
             $companyMap[$c->id] = $c;
         }
-
-        // 2. Map Shares by Owner Company
+        // 2. Group Shares by Owner
         $portfolios = [];
         foreach ($shares as $share) {
             $ownerId = $share['owner_id'];
             if (!isset($portfolios[$ownerId])) $portfolios[$ownerId] = [];
             $portfolios[$ownerId][] = $share;
         }
+        // 3. Calculate Valuations
+        foreach ($companyMap as $id => $company) {
+            $portfolioValue = 0;
 
-        // 3. THE LOOP - Iteratively calculate Net Worth 5 times to stabilize valuations
-        // This allows for indirect ownership effects to propagate
-        for ($i = 0; $i < 5; $i++) {
-            foreach ($companyMap as $id => $company) {
-                $portfolioValue = 0;
+            if (isset($portfolios[$id])) {
+                foreach ($portfolios[$id] as $share) {
+                    $targetId = $share['company_id'];
+                    $amount = $share['amount'];
 
-                if (isset($portfolios[$id])) {
-                    foreach ($portfolios[$id] as $share) {
-                        $targetId = $share['company_id'];
-                        $amount = $share['amount'];
+                    $targetCash = $cashMap[$targetId] ?? 0;
+                    $targetBasePrice = max(1, floor($targetCash / 100));
 
-                        // Use the Net Worth calculated in the previous loop pass
-                        $targetNetWorth = $companyMap[$targetId]->net_worth ?? 0;
-
-                        // Price = Net Worth / 100
-                        $targetPrice = max(1, floor($targetNetWorth / 100));
-
-                        $portfolioValue += ($amount * $targetPrice);
-                    }
+                    $portfolioValue += ($amount * $targetBasePrice);
                 }
-
-                // Update for the next pass
-                $company->net_worth = $company->cash + $portfolioValue;
             }
-        }
-
-        // 4. Final Price Calculation
-        foreach ($companyMap as $company) {
+            $company->net_worth = $company->cash + $portfolioValue;
             $company->stock_price = max(1, floor($company->net_worth / 100));
         }
-
         return array_values($companyMap);
     }
 
