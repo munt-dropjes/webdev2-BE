@@ -26,7 +26,7 @@ class UserController extends Controller
 
             $users = $this->userService->getAllUsers($request);
         } catch (Exception $e){
-            $this->respondWithError($e->getCode(), $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
 
         if(!empty($users)) {
@@ -45,7 +45,7 @@ class UserController extends Controller
                 $this->respondWithError(404, "User not found");
             }
         } catch (Exception $e) {
-            $this->respondWithError($e->getCode(), $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 
@@ -60,7 +60,7 @@ class UserController extends Controller
             $newUser = $this->userService->registerUser($newUserRequest);
             $this->respond($newUser);
         } catch (Exception $e) {
-            $this->respondWithError($e->getCode(), $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 
@@ -70,7 +70,7 @@ class UserController extends Controller
 
             $this->respond($this->userService->updateUser($id, $inputUser));
         } catch (Exception $e) {
-            $this->respondWithError($e->getCode(), $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 
@@ -87,7 +87,7 @@ class UserController extends Controller
             $this->userService->deleteUser($id);
             $this->respond(['message' => 'User deleted successfully']);
         } catch (Exception $e) {
-            $this->respondWithError($e->getCode(), $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 }

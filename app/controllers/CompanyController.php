@@ -22,7 +22,7 @@ class CompanyController extends Controller{
             $companies = $this->companyService->getAllCompanies($user);
             $this->respond($companies);
         } catch (Exception $e) {
-            $this->respondWithError(500, $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 
@@ -35,7 +35,7 @@ class CompanyController extends Controller{
             }
             $this->respond($company);
         } catch (Exception $e) {
-            $this->respondWithError(500, $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 }

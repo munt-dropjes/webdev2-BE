@@ -61,7 +61,7 @@ class AuthController extends Controller
 
         try {
             return JWT::encode($payload, JwtConfig::getSecret(), JwtConfig::getAlgo());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }

@@ -16,15 +16,30 @@ class StockController extends Controller
     }
 
     public function getBankStocks(){
-        $this->respond($this->stockService->getBankStocks());
+        try{
+            $this->respond($this->stockService->getBankStocks());
+        } catch (Exception $e){
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
+        }
     }
 
     public function getCompanyStocks(int $companyId){
-        $this->respond($this->stockService->getCompanyStocks($companyId));
+        try {
+            if (!$companyId) {
+                $this->respondWithError(400, "Company ID is required");
+            }
+            $this->respond($this->stockService->getCompanyStocks($companyId));
+        } catch (Exception $e){
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
+        }
     }
 
     public function getAllStocks(){
-        $this->respond($this->stockService->getAllStocks());
+        try {
+            $this->respond($this->stockService->getAllStocks());
+        } catch (Exception $e){
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
+        }
     }
 
     public function trade(){
@@ -37,7 +52,7 @@ class StockController extends Controller
             $this->stockService->tradeStock($request);
             $this->respond(["message" => "Trade executed successfully"]);
         } catch (Exception $e){
-            $this->respondWithError($e->getCode(), $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 }

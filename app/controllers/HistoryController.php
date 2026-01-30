@@ -18,7 +18,7 @@ class HistoryController extends Controller
             $result = $this->historyService->saveHistory();
             $this->respond($result);
         } catch (Exception $e) {
-            $this->respondWithError(500, $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 
@@ -28,7 +28,7 @@ class HistoryController extends Controller
             $history = $this->historyService->getHistorySince($decodedDate);
             $this->respond($history);
         } catch (Exception $e) {
-            $this->respondWithError(500, $e->getMessage());
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }
     }
 

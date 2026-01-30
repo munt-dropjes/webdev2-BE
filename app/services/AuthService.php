@@ -58,7 +58,7 @@ class AuthService {
 
             return $user;
         } catch (Exception $e) {
-            throw new Exception('Internal server error: ' . $e->getMessage(), 500);
+            throw new Exception('Internal server error: ' . $e->getMessage());
         }
     }
 
