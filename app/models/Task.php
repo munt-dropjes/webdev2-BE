@@ -28,6 +28,7 @@ class Task
         $response->reward_p3 = $task->reward_p3;
         $response->reward_p4 = $task->reward_p4;
         $response->reward_p5 = $task->reward_p5;
+        $response->penalty = $task->penalty;
         $response->finished_by = $task->finished_by;
         $response->failed_by = $task->failed_by;
         return $response;
