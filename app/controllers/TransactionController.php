@@ -23,6 +23,10 @@ class TransactionController extends Controller
     public function create(){
         try {
             $request = $this->requestObjectFromPostedJson(TransactionCreateRequest::class);
+            $user = $this->authService->getCurrentUserFromTokenPayload();
+            if ($user->role !== "admin") {
+                $this->respondWithError(401, "Unauthorized");
+            }
 
             $this->transactionService->processTransaction($request);
 

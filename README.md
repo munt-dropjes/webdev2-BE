@@ -4,13 +4,22 @@ This is a **Game Economy Backend** built with **Vanilla PHP** (no framework) and
 
 ## 🌟 Overview
 
-The application simulates a dynamic economy where:
-* **Companies** (Teams/Groups) have **Cash** and own **Stocks**.
-* **Stocks** are shares of companies. The price of a stock is dynamic, calculated based on the target company's **Net Worth**.
+The application simulates a dynamic economy with high-stakes mechanics:
+
+* **Companies:** (Teams/Groups) have **Cash** and own **Stocks**.
+    * **Privacy:** A company's Cash balance is **private**. Only Admins and the company owner can see it. Other players only see Net Worth.
+* **Stock Valuation:**
+    * **Stocks** are shares of companies. The price of a stock is dynamic, calculated based on the target company's **Net Worth**.
     * **Net Worth** = `Cash + (Portfolio Value)`.
-* **Trading:** Companies can buy/sell stocks from each other or the Bank. Prices fluctuate instantly as companies earn cash or trade.
-* **Tasks:** Companies complete tasks (e.g., "Knot Tying", "Trivia") to earn cash rewards. The system uses a **Tiered Reward System** (1st place gets P1 reward, 2nd gets P2, ..., 4th and 5th get penalties).
-* **History:** The system acts as a "Gatekeeper" to record minute-by-minute snapshots of company values for historical graphing.
+    * **Stock Price** = `(Net Worth / 100)`.
+    * *Buying stocks increases your Net Worth, but decreases your Cash (and therefore your own Stock Price), creating a strategic trade-off.*
+* **One-Shot Task System:**
+    * Companies complete tasks to earn cash.
+    * **High Stakes:** A company has **only one attempt** per task.
+    * **Success:** Earns the tiered reward (1st place gets P1, 2nd gets P2, etc.).
+    * **Failure:** The company pays a **Penalty** (deducted from cash) and is **blocked** from retrying.
+    * **Fairness:** Failed attempts do *not* consume a Rank slot. If Company A fails, Company B can still claim the 1st Place reward.
+* **History:** The system records minute-by-minute snapshots of company values for historical graphing.
 
 ---
 
@@ -34,11 +43,19 @@ cp .env.example .env
 Open `.env` and set your database credentials. If using the provided `docker-compose.yml`, these defaults work out of the box:
 
 ```ini
+# Database Configuration
 DB_TYPE=mysql
 DB_SERVER=mysql
-DB_NAME=developmentdb
-DB_USER=developers
+DB_USER=developer
 DB_PASS=secret123
+DB_NAME=developmentdb
+DB_PORT=8080
+
+# JWT Configuration
+JWT_SECRET=default_secret_for_dev
+JWT_ALGO=HS256
+JWT_ISSUER=http://localhost/api
+JWT_EXPIRE_TIME=3600
 ```
 
 ### 3. Start the Application
@@ -47,7 +64,6 @@ Run the application using Docker Compose. This spins up the **PHP-Apache** conta
 
 ```bash
 docker-compose up -d --build
-
 ```
 
 ### 4. Database Initialization
@@ -94,40 +110,63 @@ To generate historical data for graphs, the backend expects a "pulse". You shoul
 
 ### 🏢 Companies & History
 
-| Method | Endpoint              | Description                                           |
-|--------|-----------------------|-------------------------------------------------------|
-| `GET`  | `/api/companies`      | List all companies with live Net Worth & Stock Price. |
-| `GET`  | `/api/companies/{id}` | Get details for a specific company.                   |
-| `POST` | `/api/history/save`   | Trigger a valuation snapshot (Heartbeat).             |
-| `GET`  | `/api/history/{date}` | Get valuation history since `{date}`.                 |
+| Method | Endpoint              | Description                                                                                           |
+|--------|-----------------------|-------------------------------------------------------------------------------------------------------|
+| `GET`  | `/api/companies`      | List all companies with live Net Worth & Stock Price. Cash is hidden for non-owners. Prices are live. |
+| `GET`  | `/api/companies/{id}` | Get details for a specific company.                                                                   |
+| `POST` | `/api/history/save`   | Trigger a valuation snapshot (Heartbeat).                                                             |
+| `GET`  | `/api/history/{date}` | Get valuation history since `{date}`. Date must be URL Encoded Y-m-d H:i:s.                           |
 
 ### ✅ Tasks
 
-| Method | Endpoint              | Description                                                                    |
-|--------|-----------------------|--------------------------------------------------------------------------------|
-| `GET`  | `/api/tasks`          | List all tasks with their category, rewards, and completion status.            |
-| `POST` | `/api/tasks/complete` | Mark a task as completed for a company. Automatically assigns rank and reward. |
+| Method | Endpoint              | Description                                                                                                                      |
+|--------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| `GET`  | `/api/tasks`          | List all tasks with their category, rewards, and completion status. Response includes finished_by (winners) and failed (losers). |
+| `POST` | `/api/tasks/complete` | Submit a task attempt. Irreversible. Success automatically assigns rank and reward.; Failure yields penalty + block.             |
 
-**Payload:** `{"company_id": 1, "task_id": 5}`
+Payload (Success):
+```JSON
+{
+"company_id": 1,
+"task_id": 5,
+"success": true
+}
+```
+Payload (Failure/Penalty):
+```JSON
+{
+"company_id": 1,
+"task_id": 5,
+"success": false
+}
+```
 
 ### 📈 Stocks & Trading
 
-| Method | Endpoint                   | Description                                        |
-|--------|----------------------------|----------------------------------------------------|
-| `GET`  | `/api/stocks`              | View all active shares owned by companies.         |
-| `GET`  | `/api/stocks/bank`         | View shares owned by the Bank (available for IPO). |
-| `GET`  | `/api/stocks/company/{id}` | View a specific company's portfolio.               |
-| `POST` | `/api/stocks/trade`        | Buy/Sell stocks.                                   |
+| Method | Endpoint                   | Description                                                |
+|--------|----------------------------|------------------------------------------------------------|
+| `GET`  | `/api/stocks`              | View all active shares owned by companies.                 |
+| `GET`  | `/api/stocks/bank`         | View shares owned by the Bank.                             |
+| `GET`  | `/api/stocks/company/{id}` | View a specific company's portfolio.                       |
+| `POST` | `/api/stocks/trade`        | Buy/Sell stocks. Checks for sufficient Cash & Stock funds. |
 
-**Payload:** `{"buyer_id": 1, "seller_id": null, "stock_company_id": 2, "amount": 10}`
+**Payload:** 
+```JSON
+{
+  "buyer_id": 1,
+  "seller_id": null,
+  "stock_company_id": 2,
+  "amount": 10
+}
+```
 *(Use `seller_id: null` to buy from the Bank)*
 
 ### 💸 Transactions
 
-| Method | Endpoint            | Description                                  |
-|--------|---------------------|----------------------------------------------|
-| `GET`  | `/api/transactions` | View global transaction history (cash flow). |
-| `POST` | `/api/transactions` | Create a manual transaction (Admin only).    |
+| Method | Endpoint            | Description                                                    |
+|--------|---------------------|----------------------------------------------------------------|
+| `GET`  | `/api/transactions` | View transaction history. Admins see all; Users see their own. |
+| `POST` | `/api/transactions` | Create a manual transaction (Admin only).                      |
 
 ---
 
