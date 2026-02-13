@@ -163,11 +163,21 @@ Payload (Failure/Penalty):
 
 ### 💸 Transactions
 
-| Method | Endpoint            | Description                                                    |
-|--------|---------------------|----------------------------------------------------------------|
-| `GET`  | `/api/transactions` | View transaction history. Admins see all; Users see their own. |
-| `POST` | `/api/transactions` | Create a manual transaction (Admin only).                      |
+| Method | Endpoint                     | Description                                                    |
+|--------|------------------------------|----------------------------------------------------------------|
+| `GET`  | `/api/transactions`          | View transaction history. Admins see all; Users see their own. |
+| `POST` | `/api/transactions`          | Create a manual transaction (Admin only).                      |
+| `POST` | `/api/transactions/transfer` | Transfer money from one company to another company.            |
 
+**Payload:**
+```JSON
+{
+  "sender_id": 1,
+  "receiver_id": 2,
+  "amount": 1000,
+  "description": "Secret deal transfer"
+}
+```
 ---
 
 ## 🛠 Tech Stack
