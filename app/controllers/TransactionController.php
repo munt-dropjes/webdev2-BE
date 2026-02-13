@@ -5,7 +5,7 @@ namespace Controllers;
 use Exception;
 use Models\DTO\TransactionCreateRequest;
 use Models\DTO\TransactionManyRequest;
-use Models\User;
+use Models\DTO\TransactionTransferRequest;
 use Services\AuthService;
 use Services\TransactionService;
 
@@ -22,11 +22,12 @@ class TransactionController extends Controller
 
     public function create(){
         try {
-            $request = $this->requestObjectFromPostedJson(TransactionCreateRequest::class);
             $user = $this->authService->getCurrentUserFromTokenPayload();
             if ($user->role !== "admin") {
                 $this->respondWithError(401, "Unauthorized");
             }
+
+            $request = $this->requestObjectFromPostedJson(TransactionCreateRequest::class);
 
             $this->transactionService->processTransaction($request);
 
@@ -47,6 +48,23 @@ class TransactionController extends Controller
             $history = $this->transactionService->getTransactionHistory($transactionManyRequest);
 
             $this->respond($history);
+        } catch (Exception $e) {
+            $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
+        }
+    }
+
+    public function transfer() {
+        try {
+            $user = $this->authService->getCurrentUserFromTokenPayload();
+            $request = $this->requestObjectFromPostedJson(TransactionTransferRequest::class);
+            if (!isset($request->sender_id) || !isset($request->receiver_id) || !isset($request->amount) || !isset($request->description)) {
+                $this->respondWithError(400, "Missing required fields: sender_id, receiver_id, amount, description");
+                return;
+            }
+
+            $this->transactionService->transfer($request, $user);
+
+            $this->respond(["message" => "Transfer completed successfully"]);
         } catch (Exception $e) {
             $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
         }

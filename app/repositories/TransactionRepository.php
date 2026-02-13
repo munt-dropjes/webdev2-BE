@@ -5,6 +5,7 @@ namespace Repositories;
 use Exception;
 use Models\DTO\TransactionCreateRequest;
 use Models\DTO\TransactionManyRequest;
+use Models\DTO\TransactionTransferRequest;
 use Models\Transaction;
 use PDO;
 
@@ -78,6 +79,37 @@ class TransactionRepository extends Repository
                 $this->connection->rollBack();
             }
             throw new Exception("Database Transaction Failed: " . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function executeTransfer(TransactionTransferRequest $request, string $senderDesc, string $receiverDesc): void
+    {
+        try {
+            $this->connection->beginTransaction();
+
+            // Deduct from sender
+            $stmtDeduct = $this->connection->prepare("UPDATE companies SET cash = cash - ? WHERE id = ?");
+            $stmtDeduct->execute([$request->amount, $request->sender_id]);
+
+            // Add to receiver
+            $stmtAdd = $this->connection->prepare("UPDATE companies SET cash = cash + ? WHERE id = ?");
+            $stmtAdd->execute([$request->amount, $request->receiver_id]);
+
+            // Log the transaction
+            $stmtLogSend = $this->connection->prepare("INSERT INTO transactions (company_id, amount, description) VALUES (?, ?, ?)");
+            $stmtLogSend->execute([$request->sender_id, -$request->amount, $senderDesc]);
+            $stmtLogReceive = $this->connection->prepare("INSERT INTO transactions (company_id, amount, description) VALUES (?, ?, ?)");
+            $stmtLogReceive->execute([$request->receiver_id, $request->amount, $receiverDesc]);
+
+            $this->connection->commit();
+        } catch (Exception $e) {
+            if ($this->connection->inTransaction()) {
+                $this->connection->rollBack();
+            }
+            throw new Exception("Transfer Failed: " . $e->getMessage(), 500);
         }
     }
 }
