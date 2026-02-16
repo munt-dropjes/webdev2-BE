@@ -10,6 +10,8 @@ class Company implements JsonSerializable
     public string $name;
     public string $color;
     public int $cash;
+    public bool $is_npc;
+
     public string $created_at;
 
     public int $net_worth = 0;

@@ -15,7 +15,7 @@ DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `companies`;
 
 -- --------------------------------------------------------
--- 2. Create Companies Table (MUST BE FIRST)
+-- 2. Create Companies Table
 -- Matches app/models/Company.php
 -- --------------------------------------------------------
 CREATE TABLE `companies`
@@ -24,13 +24,14 @@ CREATE TABLE `companies`
     `name`       varchar(50) NOT NULL,
     `color`      varchar(7)  NOT NULL,
     `cash`       bigint(20) DEFAULT 100000,
+    `is_npc`     tinyint(1) NOT NULL DEFAULT 0,
     `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
--- 2. Create Users Table
+-- 3. Create Users Table
 -- Matches app/models/User.php
 -- --------------------------------------------------------
 CREATE TABLE `users`
@@ -143,12 +144,13 @@ CREATE TABLE `task_completions`
 -- --------------------------------------------------------
 -- 10. Seed Companies
 -- --------------------------------------------------------
-INSERT INTO `companies` (`name`, `color`, `cash`)
-VALUES ('Haviken', '#ff69b4', 100000),
-       ('Spechten', '#198754', 100000),
-       ('Sperwers', '#ffc107', 100000),
-       ('Zwaluwen', '#0d6efd', 100000),
-       ('Valken', '#fd7e14', 100000);
+INSERT INTO `companies` (`id`, `name`, `color`, `cash`, `is_npc`)
+VALUES (1, 'Haviken', '#ff69b4', 100000, 0),
+       (2, 'Spechten', '#198754', 100000, 0),
+       (3, 'Sperwers', '#ffc107', 100000, 0),
+       (4, 'Zwaluwen', '#0d6efd', 100000, 0),
+       (5, 'Valken', '#fd7e14', 100000, 0),
+       (6, 'De Staf', '#E53935', 100000, 1);
 
 -- --------------------------------------------------------
 -- 11. Seed Users (Depends on Companies)
@@ -167,7 +169,7 @@ VALUES  (1, 'Haviken', 'haviken@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.H
 -- --------------------------------------------------------
 -- 12. Seed Shares
 -- --------------------------------------------------------
--- Example: 5 Companies. Total 100 shares each.
+-- Example: 6 Companies total (5 Players + 1 NPC). Total 100 shares each.
 -- A. Own Shares: Each company starts with 25 shares of itself.
 INSERT INTO `shares` (`company_id`, `owner_id`, `amount`)
 SELECT `id`, `id`, 25
@@ -179,9 +181,9 @@ SELECT target.id, owner.id, 5
 FROM `companies` target
          JOIN `companies` owner ON target.id != owner.id;
 
--- C. Bank Shares: The Bank holds the rest (55 shares).
+-- C. Bank Shares: The Bank holds the rest (50 shares).
 INSERT INTO `shares` (`company_id`, `owner_id`, `amount`)
-SELECT `id`, NULL, 55
+SELECT `id`, NULL, 50
 FROM `companies`;
 
 -- --------------------------------------------------------

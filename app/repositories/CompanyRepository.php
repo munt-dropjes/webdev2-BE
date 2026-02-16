@@ -12,7 +12,7 @@ class CompanyRepository extends Repository {
      */
     public function findAll(): array {
         try {
-            $stmt = $this->connection->prepare("SELECT id, name, color, cash, created_at FROM companies");
+            $stmt = $this->connection->prepare("SELECT id, name, cash, color, is_npc, created_at FROM companies");
             $stmt->execute();
 
             $stmt->setFetchMode(PDO::FETCH_CLASS, Company::class);
@@ -27,7 +27,7 @@ class CompanyRepository extends Repository {
      */
     public function findById(int $id): ?Company {
         try {
-            $stmt = $this->connection->prepare("SELECT id, name, color, cash FROM companies WHERE id = :id");
+            $stmt = $this->connection->prepare("SELECT id, name, cash, color, is_npc, created_at FROM companies WHERE id = :id");
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
 

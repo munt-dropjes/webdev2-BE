@@ -10,6 +10,7 @@ class CompanyResponse {
     public ?int $cash;     // Nullable (Hidden for others)
     public int $net_worth;
     public int $stock_price;
+    public bool $is_npc;
     public string $created_at;
 
     public static function CreateFromCompany(Company $company, bool $showCash): self {
@@ -22,6 +23,8 @@ class CompanyResponse {
         // Calculated fields
         $response->net_worth = $company->net_worth ?? 0;
         $response->stock_price = $company->stock_price ?? 0;
+
+        $response->is_npc = (bool)$company->is_npc;
 
         // Privacy Logic
         $response->cash = $showCash ? $company->cash : null;
