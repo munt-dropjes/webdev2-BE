@@ -32,17 +32,20 @@ class TradeOfferRepository extends Repository
     /**
      * @throws Exception
      */
-    public function getPendingOffersForSeller(int $sellerId): array {
+    public function getPendingOffers(int $companyId): array {
         try {
             $sql = "SELECT t.*, b.name as buyer_name, c.name as target_company_name 
                     FROM trade_offers t
                     JOIN companies b ON t.buyer_id = b.id
                     JOIN companies c ON t.target_company_id = c.id
-                    WHERE t.seller_id = ? AND t.status = 'pending'
+                    WHERE (t.seller_id = ? OR t.buyer_id = ?) AND t.status = 'pending'
                     ORDER BY t.created_at DESC";
 
             $stmt = $this->connection->prepare($sql);
-            $stmt->execute([$sellerId]);
+
+            // We geven het $companyId twee keer mee: één keer voor verkoper, één keer voor koper
+            $stmt->execute([$companyId, $companyId]);
+
             $stmt->setFetchMode(PDO::FETCH_CLASS, TradeOffer::class);
             return $stmt->fetchAll();
         } catch (Exception $e) {
