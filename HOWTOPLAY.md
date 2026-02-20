@@ -36,11 +36,18 @@ Op een gegeven moment gaat de aandelenbeurs open. Het hart van het spel is het *
 ![Live Koersverloop](GraphUI.png)
 
 ### Hoe werkt de koers?
-De aandelenkoers van een patrouille wordt volledig bepaald door de hoeveelheid Cash die zij tot dan toe verdiend hebben. De wiskunde is simpel:
-> **1 Aandeel is 1% waard van het geld dat de familie heeft. (Koers = Cash / 100)**
+De aandelenkoers van een patrouille wordt berekend op basis van **alles wat zij bezitten**, dus niet alleen hun Cash, maar ook hun aandelenportfolio! De wiskunde hierachter werkt in twee stappen:
 
-* *Voorbeeld:* Als de Spechten om 15:00 uur $f$ 300.000 Cash hebben verdiend, is ieder aandeel Spechten $f$ 3.000 waard.
-* De aandelen kunnen vanaf de beursopening tot het einde van het spel op en neer schommelen afhankelijk van jullie prestaties.
+**Stap 1: De basiswaarde van je portfolio bepalen**\
+Eerst kijkt de bank naar de aandelen die je in bezit hebt. De waarde van deze portfolio-aandelen wordt puur berekend op basis van de *Cash* van de bedrijven die je bezit (Cash / 100).
+*Bezitten de Spechten 10 aandelen van de Haviken? En hebben de Haviken ƒ 100.000 Cash? Dan zijn die aandelen voor de Spechten ƒ 10.000 waard (10 x ƒ 1.000).*
+
+**Stap 2: Jouw eigen Aandeelwaarde (De Koers)**\
+Daarna berekent de bank jouw **Totale Netto Waarde** (Jouw eigen Cash + de waarde van je portfolio). Jouw uiteindelijke aandelenkoers is 1% van dat totaal:
+> **Koers = Totale Netto Waarde / 100** *(met een minimum van ƒ 1)*
+
+* *Rekenvoorbeeld:* Als de Spechten ƒ 200.000 Cash op de bank hebben, én een aandelenportfolio ter waarde van ƒ 50.000, is hun Totale Netto Waarde ƒ 250.000. Ieder aandeel 'Spechten' is op de beurs dan **ƒ 2.500** waard.
+* **De strategie:** Door aandelen te kopen van winnende groepen, stijgt jouw portfolio in waarde. Hierdoor stijgt jouw Netto Waarde, wat er direct voor zorgt dat jouw *eigen* aandelen op de beurs ook duurder worden!
 
 ---
 
