@@ -21,12 +21,24 @@ class TradeOfferController extends Controller
     {
         try {
             $user = $this->authService->getCurrentUserFromTokenPayload();
-            if (!$user->company_id) {
+            $request = $this->requestObjectFromPostedJson(TradeOfferRequest::class);
+
+            $buyerId = $user->company_id;
+
+            // Uitzondering voor de Admin:
+            if ($user->role === 'admin') {
+                if (!empty($request->buyer_id)) {
+                    $buyerId = $request->buyer_id;
+                } else {
+                    $this->respondWithError(400, "Als admin moet je een 'buyer_id' meesturen om namens een bedrijf een bod te doen.");
+                    return;
+                }
+            } elseif (!$buyerId) {
                 $this->respondWithError(403, "Alleen bedrijven kunnen een bod doen.");
+                return;
             }
 
-            $request = $this->requestObjectFromPostedJson(TradeOfferRequest::class);
-            $this->offerService->createOffer($user->company_id, $request);
+            $this->offerService->createOffer($buyerId, $request);
             $this->respond(["message" => "Bod succesvol verstuurd."]);
         } catch (Exception $e) {
             $this->respondWithError($e->getCode() ?: 500, $e->getMessage());
@@ -37,10 +49,18 @@ class TradeOfferController extends Controller
     {
         try {
             $user = $this->authService->getCurrentUserFromTokenPayload();
-            if (!$user->company_id) {
-                $this->respondWithError(403, "Alleen bedrijven kunnen biedingen bekijken.");
+
+            // Uitzondering voor de Admin:
+            if ($user->role === 'admin') {
+                $offers = $this->offerService->getAllPendingOffers();
+            } else {
+                if (!$user->company_id) {
+                    $this->respondWithError(403, "Geen bedrijf gekoppeld aan dit account.");
+                    return;
+                }
+                $offers = $this->offerService->getPendingOffers($user->company_id);
             }
-            $offers = $this->offerService->getPendingOffers($user->company_id);
+
             $this->respond($offers);
         } catch (Exception $e) {
             $this->respondWithError($e->getCode() ?: 500, $e->getMessage());

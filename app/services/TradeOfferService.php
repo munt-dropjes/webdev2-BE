@@ -37,6 +37,13 @@ class TradeOfferService
     /**
      * @throws Exception
      */
+    public function getAllPendingOffers(): array {
+        return $this->offerRepo->getAllPendingOffers();
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getPendingOffers(int $companyId): array {
         return $this->offerRepo->getPendingOffers($companyId);
     }
