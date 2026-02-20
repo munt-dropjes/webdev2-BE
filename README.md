@@ -178,6 +178,27 @@ Payload (Failure/Penalty):
   "description": "Secret deal transfer"
 }
 ```
+
+### 🤝 Trade Offers (Negotiations)
+
+| Method | Endpoint                   | Description                                                                                   |
+|--------|----------------------------|-----------------------------------------------------------------------------------------------|
+| `GET`  | `/api/offers/pending`      | View all incoming pending offers for the authenticated company.                               |
+| `POST` | `/api/offers`              | Propose a trade to another company. Funds and shares are not locked until accepted.           |
+| `POST` | `/api/offers/{id}/accept`  | Accept a pending offer. Triggers Just-In-Time (JIT) validation and an atomic cash/share swap. |
+| `POST` | `/api/offers/{id}/decline` | Decline a pending offer.                                                                      |
+
+**Payload for Proposing an Offer:**
+```JSON
+{
+  "seller_id": 2,
+  "target_company_id": 2,
+  "amount": 5,
+  "total_price": 15000
+}
+```
+*(In this example, the authenticated user is offering Company #2 $f$ 15,000 to buy 5 shares of Company #2's own stock).*
+
 ---
 
 ## 🛠 Tech Stack

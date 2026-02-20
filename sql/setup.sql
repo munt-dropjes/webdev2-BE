@@ -142,7 +142,25 @@ CREATE TABLE `task_completions`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
--- 10. Seed Companies
+-- 10. Trade Offer Table
+-- --------------------------------------------------------
+CREATE TABLE `trade_offers` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `buyer_id` int(11) NOT NULL,
+    `seller_id` int(11) NOT NULL,
+    `target_company_id` int(11) NOT NULL,
+    `amount` int(11) NOT NULL,
+    `total_price` int(11) NOT NULL,
+    `status` enum('pending','accepted','declined') DEFAULT 'pending',
+    `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_to_buyer` FOREIGN KEY (`buyer_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_to_seller` FOREIGN KEY (`seller_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_to_target` FOREIGN KEY (`target_company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+-- 11. Seed Companies
 -- --------------------------------------------------------
 INSERT INTO `companies` (`id`, `name`, `color`, `cash`, `is_npc`)
 VALUES (1, 'Haviken', '#ff69b4', 100000, 0),
@@ -153,7 +171,7 @@ VALUES (1, 'Haviken', '#ff69b4', 100000, 0),
        (6, 'De Staf', '#E53935', 100000, 1);
 
 -- --------------------------------------------------------
--- 11. Seed Users (Depends on Companies)
+-- 12. Seed Users (Depends on Companies)
 -- --------------------------------------------------------
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `created_at`)
 VALUES (1, 'StockMaster', 'admin@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'admin',
@@ -167,7 +185,7 @@ VALUES  (1, 'Haviken', 'haviken@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.H
         (5, 'Valken', 'valken@game.com', '$2y$12$2NLsHOtVvZIXtew35SmxO.mCkj/.HywBVwfCB3Fflq1F6s0C8ZryK', 'user');
 
 -- --------------------------------------------------------
--- 12. Seed Shares
+-- 13. Seed Shares
 -- --------------------------------------------------------
 -- Example: 6 Companies total (5 Players + 1 NPC). Total 100 shares each.
 -- A. Own Shares: Each company starts with 25 shares of itself.
@@ -187,7 +205,7 @@ SELECT `id`, NULL, 50
 FROM `companies`;
 
 -- --------------------------------------------------------
--- 13. Seed Task Categories
+-- 14. Seed Task Categories
 -- --------------------------------------------------------
 INSERT INTO `task_categories` (`label`, `reward_p1`, `reward_p2`, `reward_p3`, `reward_p4`, `reward_p5`, `penalty`)
 VALUES ('3e Klasse', 25000, 12500, 5000, -12500, -25000, -25000),
@@ -197,7 +215,7 @@ VALUES ('3e Klasse', 25000, 12500, 5000, -12500, -25000, -25000),
        ('Vragen', 5000, 2500, 1000, -2500, -5000, -5000);
 
 -- --------------------------------------------------------
--- 14. Seed Tasks
+-- 15. Seed Tasks
 -- --------------------------------------------------------
 -- 3e Klasse
 INSERT INTO `tasks` (`category_id`, `name`)

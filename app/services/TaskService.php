@@ -58,6 +58,9 @@ class TaskService
             $description = "Penalty of ƒ {$amount} for incorrect task submission: {$task->category} - {$task->name}";
             $this->taskRepo->completeTask($request, $amount, $description);
 
+            $npcService = new \Services\NpcService();
+            $npcService->executeVultureProtocol($company->id);
+
             return TaskResponse::CreateFromCompletion($company, $task, $amount, false);
         }
 

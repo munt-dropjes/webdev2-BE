@@ -72,6 +72,13 @@ $router->mount('/api', function() use ($router, $auth) {
         $router->get('/company/{companyId}', 'Controllers\StockController@getCompanyStocks');
         $router->post('/trade', 'Controllers\StockController@trade');
     });
+
+    $router->mount('/offers', function() use ($router) {
+        $router->post('/', 'Controllers\TradeOfferController@create');
+        $router->get('/pending', 'Controllers\TradeOfferController@getPending');
+        $router->post('/([0-9]+)/accept', 'Controllers\TradeOfferController@accept');
+        $router->post('/([0-9]+)/decline', 'Controllers\TradeOfferController@decline');
+    });
 });
 
 $router->set404(function() {
